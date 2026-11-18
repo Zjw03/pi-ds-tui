@@ -52,7 +52,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Feature | Entry | Config switch |
 | --- | --- | --- |
 | dsh-style footer: cwd, context, tokens, cache, cost, git, mode, effort, model | automatic | `footer.enabled` |
-| Header: DeepSeek whale logo + name, version, key hints; text-only on narrow terminals | automatic | `header.enabled` / `header.logo` |
+| Header: DeepSeek whale + `DEEPSEEK`/`HARNESS` block wordmark + model/effort + cwd + tip + tagline | automatic | `header.enabled` / `header.logo` |
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
 | Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
@@ -109,8 +109,9 @@ extensions/
     component.ts      Component base class
     icons.ts          shared glyphs
     footer.ts         footer snapshot + renderer + component
-    header.ts         startup header + whale layout
+    header.ts         startup header + splash layout
     whale.ts          13-row DeepSeek pixel whale
+    bigfont.ts        5-row DEEPSEEK/HARNESS block wordmark
     editor.ts         CustomEditor subclass with the prompt glyph
     working.ts        working message/indicator
     status.ts         extension status key

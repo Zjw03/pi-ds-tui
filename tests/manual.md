@@ -50,11 +50,12 @@
 
 ## M2 Header
 
-- [ ] 宽度 ≥64 时显示 13 行像素鲸鱼 + `DEEPSEEK HARNESS` 文本列。
-- [ ] 宽度 40–63 时显示鲸鱼 + 一行名称。
+- [ ] 宽度 ≥64 时显示 13 行像素鲸鱼 + `DEEPSEEK`/`HARNESS` 大字 + 模型/effort + cwd + tip。
+- [ ] 鲸鱼下方显示居中的欢迎语 `DeepSeek Harness · Terminal UI`。
+- [ ] 宽度 40–63 时显示鲸鱼 + 一行名称 + 模型/cwd/tip + 欢迎语。
 - [ ] 宽度 <40 时降级为纯文本；<16 时只留名称。
-- [ ] `header.logo: false` 时始终纯文本。
-- [ ] 切换 dsh-dark / dsh-light，鲸鱼颜色保持 DeepSeek 蓝，文本列跟随主题。
+- [ ] `header.logo: false` 时始终纯文本，但仍显示模型/cwd/tip/欢迎语。
+- [ ] 切换 dsh-dark / dsh-light，鲸鱼颜色保持 DeepSeek 蓝，文本跟随主题。
 - [ ] 与 feynman 同时加载时，`resources_discover` 后 header 是 pi-ds-tui。
 - [ ] 被其他扩展覆盖后，`/ds-header` 能立刻拿回 header。
 - [ ] `header.enabled: false` 后恢复 pi 内置 header。

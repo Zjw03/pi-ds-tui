@@ -11,7 +11,7 @@ import { showApproval } from './overlays/approval.ts'
 import { createReadRenderer } from './transcript/tool-card.ts'
 import { installEditor } from './ui/editor.ts'
 import { createFooterFactory } from './ui/footer.ts'
-import { createHeaderFactory, type HeaderInfo } from './ui/header.ts'
+import { createHeaderFactory, DEFAULT_TAGLINE, pickHeaderTip, type HeaderInfo } from './ui/header.ts'
 import { clearWorkingStatus, setWorkingStatus } from './ui/status.ts'
 import { VERSION } from './version.ts'
 import { applyWorking } from './ui/working.ts'
@@ -25,6 +25,8 @@ const HEADER_INFO: HeaderInfo = {
   hints: '/ commands \u00b7 ! bash \u00b7 ctrl+o tools',
 }
 
+const HEADER_TIP = pickHeaderTip()
+
 /**
  * Apply the header. Called on session_start and again on resources_discover:
  * extensions loaded before us (feynman) may set their header from an async
@@ -33,7 +35,15 @@ const HEADER_INFO: HeaderInfo = {
  */
 function applyHeader(ctx: ExtensionContext): void {
   if (!ctx.hasUI) return
-  ctx.ui.setHeader(createHeaderFactory(HEADER_INFO, () => ctx.ui.theme, config.header.logo))
+  const info: HeaderInfo = {
+    ...HEADER_INFO,
+    model: ctx.model?.id,
+    effort: ctx.thinkingLevel,
+    cwd: ctx.cwd,
+    tip: HEADER_TIP,
+    tagline: DEFAULT_TAGLINE,
+  }
+  ctx.ui.setHeader(createHeaderFactory(info, () => ctx.ui.theme, config.header.logo))
 }
 
 export default function piDsTui(pi: ExtensionAPI): void {
