@@ -18,13 +18,12 @@ import { fitLine, padRight, sanitizeSingleLine, truncateMiddle, visibleWidth } f
 export interface FooterSnapshot {
   readonly cwd: string
   readonly model: string | null
-  readonly provider: string | null
   readonly thinking: string | null
   readonly contextPercent: number | null
   readonly contextWindow: number
-  readonly contextTokens: number | null
   readonly totalTokens: number
   readonly cacheTokens: number
+  readonly cacheHitPercent: number | null
   readonly cost: number
   readonly gitBranch: string | null
   readonly statuses: readonly string[]
@@ -41,6 +40,7 @@ export interface FooterDataLike {
 }
 
 interface UsageLike {
+  readonly input?: number
   readonly totalTokens?: number
   readonly cacheRead?: number
   readonly cacheWrite?: number
@@ -70,6 +70,7 @@ export interface FooterStatsCache {
   entryCount: number
   totalTokens: number
   cacheTokens: number
+  cacheHitPercent: number | null
   cost: number
 }
 
@@ -89,13 +90,12 @@ export function snapshotFooter(
   return {
     cwd: ctx.cwd,
     model: ctx.model?.id ?? null,
-    provider: ctx.model?.provider ?? null,
     thinking: ctx.thinkingLevel ?? null,
     contextPercent: usage?.percent ?? null,
     contextWindow: usage?.contextWindow ?? 0,
-    contextTokens: usage?.tokens ?? null,
     totalTokens: stats.totalTokens,
     cacheTokens: stats.cacheTokens,
+    cacheHitPercent: stats.cacheHitPercent,
     cost: stats.cost,
     gitBranch: data.getGitBranch(),
     statuses,
@@ -111,20 +111,110 @@ export function renderFooter(
   if (width <= 0) return []
   const lines: string[] = []
 
-  if (config.chips.includes('cwd')) {
-    lines.push(theme.fg('dim', truncateMiddle(snapshot.cwd, width)))
+  const status = layoutStatusLine(snapshot, config, width, theme)
+  if (status.length > 0) lines.push(status)
+
+  if (config.chips.includes('context')) {
+    const bar = renderContextBar(snapshot, width, theme)
+    if (bar.length > 0) lines.push(bar)
   }
 
-  const chips = buildChips(snapshot, config.chips)
-  const right = modelLabel(snapshot, theme)
-  const line = layoutStats(chips, right, width, theme, snapshot)
-  if (line.length > 0) lines.push(line)
-
-  if (snapshot.statuses.length > 0) {
-    lines.push(theme.fg('dim', truncateMiddle(snapshot.statuses.join(' \u00b7 '), width)))
-  }
+  const model = layoutModelLine(snapshot, width, theme)
+  if (model.length > 0) lines.push(model)
 
   return lines
+}
+
+/** Fill and track glyphs for the context meter. */
+export const BAR_FILL = '\u2588'
+export const BAR_TRACK = '\u2591'
+
+type ColorToken = string
+
+function pressureToken(percent: number | null): ColorToken {
+  if (percent === null) return 'dim'
+  if (percent >= 95) return 'error'
+  if (percent >= 80) return 'warning'
+  return 'dim'
+}
+
+function fillToken(percent: number): ColorToken {
+  if (percent >= 95) return 'error'
+  if (percent >= 80) return 'warning'
+  return 'accent'
+}
+
+/** `42% · 200k · CH 87%` — the bar's right-hand readout. */
+export function barReadout(snapshot: FooterSnapshot): string {
+  const percent = snapshot.contextPercent === null ? '?' : `${Math.round(snapshot.contextPercent)}%`
+  const window = snapshot.contextWindow > 0 ? formatTokens(snapshot.contextWindow) : '?'
+  const parts = [percent, window]
+  if (snapshot.cacheHitPercent !== null) parts.push(`CH ${Math.round(snapshot.cacheHitPercent)}%`)
+  return parts.join(' \u00b7 ')
+}
+
+/**
+ * One full-width context meter: fill from the left, track to the edge, readout
+ * right-aligned in the track. The readout keeps its own columns so the fill
+ * never has to be clipped to stay readable.
+ */
+export function renderContextBar(
+  snapshot: FooterSnapshot,
+  width: number,
+  theme: FooterTheme,
+): string {
+  if (width < 8) return ''
+  const percent = snapshot.contextPercent
+  const clamped = percent === null ? 0 : Math.min(100, Math.max(0, percent))
+  const readout = theme.fg(pressureToken(percent), barReadout(snapshot))
+  const textWidth = Math.min(width, visibleWidth(readout))
+  const trackWidth = width - textWidth - 1
+  if (trackWidth <= 0) return fitLine(readout, width)
+
+  const filled = Math.round((clamped / 100) * trackWidth)
+  const fill = theme.fg(fillToken(clamped), BAR_FILL.repeat(filled))
+  const track = theme.fg('dim', BAR_TRACK.repeat(trackWidth - filled))
+  return `${fill}${track} ${readout}`
+}
+
+function layoutStatusLine(
+  snapshot: FooterSnapshot,
+  config: FooterConfig,
+  width: number,
+  theme: FooterTheme,
+): string {
+  const showCwd = config.chips.includes('cwd')
+  const kept = buildChips(snapshot, config.chips)
+  const chipsWidth = (): number => (kept.length === 0 ? 0 : visibleWidth(joinChips(kept, theme, snapshot)))
+  const MIN_CWD = 12
+
+  while (kept.length > 0 && chipsWidth() + (showCwd ? MIN_CWD + 2 : 0) > width) {
+    const index = dropIndex(kept)
+    if (index < 0) break
+    kept.splice(index, 1)
+  }
+
+  const chips = joinChips(kept, theme, snapshot)
+  if (!showCwd) return chips.length > 0 ? fitLine(chips, width) : ''
+
+  const cwdBudget = width - (chips.length > 0 ? visibleWidth(chips) + 2 : 0)
+  const cwd = theme.fg('dim', truncateMiddle(snapshot.cwd, Math.max(1, cwdBudget)))
+  const line = chips.length > 0 ? `${cwd}  ${chips}` : cwd
+  return fitLine(line, width)
+}
+
+function layoutModelLine(snapshot: FooterSnapshot, width: number, theme: FooterTheme): string {
+  const model = modelLabel(snapshot, theme)
+  const modelWidth = visibleWidth(model)
+  const status = snapshot.statuses.join(' \u00b7 ')
+  if (status.length === 0) {
+    return `${padRight('', Math.max(0, width - modelWidth))}${fitLine(model, width)}`
+  }
+
+  const statusWidth = width - modelWidth - 2
+  if (statusWidth <= 0) return fitLine(model, width)
+  const left = padRight(theme.fg('dim', truncateMiddle(status, statusWidth)), statusWidth)
+  return fitLine(`${left}  ${model}`, width)
 }
 
 export function formatTokens(count: number): string {
@@ -149,7 +239,8 @@ interface Chip {
 function buildChips(snapshot: FooterSnapshot, order: readonly string[]): Chip[] {
   const chips: Chip[] = []
   for (const key of order) {
-    if (key === 'model' || key === 'cwd') continue
+    // `cwd`, `model` and `context` have their own rows.
+    if (key === 'model' || key === 'cwd' || key === 'context') continue
     const text = chipText(key, snapshot)
     if (text !== null) chips.push({ key, text })
   }
@@ -158,8 +249,6 @@ function buildChips(snapshot: FooterSnapshot, order: readonly string[]): Chip[] 
 
 function chipText(key: string, snapshot: FooterSnapshot): string | null {
   switch (key) {
-    case 'context':
-      return contextText(snapshot)
     case 'tokens':
       return `\u03a3 ${formatTokens(snapshot.totalTokens)}`
     case 'cache':
@@ -179,12 +268,6 @@ function chipText(key: string, snapshot: FooterSnapshot): string | null {
   }
 }
 
-function contextText(snapshot: FooterSnapshot): string {
-  const percent = snapshot.contextPercent === null ? '?' : `${snapshot.contextPercent.toFixed(1)}`
-  const window = snapshot.contextWindow > 0 ? formatTokens(snapshot.contextWindow) : '?'
-  return `${percent}%/${window}`
-}
-
 function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme): string {
   const model = snapshot.model ?? 'no-model'
   const label = theme.fg('accent', model)
@@ -192,65 +275,10 @@ function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme): string {
   return `${label}${theme.fg('dim', ` \u00b7 ${snapshot.thinking}`)}`
 }
 
-function layoutStats(
-  chips: readonly Chip[],
-  right: string,
-  width: number,
-  theme: FooterTheme,
-  snapshot: FooterSnapshot,
-): string {
-  const active = [...chips]
-  let left = joinChips(active, theme, snapshot)
-
-  while (active.length > 0 && !fits(left, right, width)) {
-    const index = dropIndex(active)
-    if (index < 0) break
-    active.splice(index, 1)
-    left = joinChips(active, theme, snapshot)
-  }
-
-  if (left.length === 0) {
-    return padRight('', Math.max(0, width - visibleWidth(right))) + right
-  }
-  if (right.length === 0) {
-    return fitLine(left, width)
-  }
-  if (fits(left, right, width)) {
-    return padRight(left, Math.max(0, width - visibleWidth(right))) + right
-  }
-
-  const availableForRight = width - visibleWidth(left) - 2
-  if (availableForRight > 0) {
-    const fittedRight = fitLine(right, availableForRight)
-    return padRight(left, Math.max(0, width - visibleWidth(fittedRight))) + fittedRight
-  }
-
-  return fitLine(left, width)
+function joinChips(chips: readonly Chip[], theme: FooterTheme, _snapshot: FooterSnapshot): string {
+  return chips.map((chip) => theme.fg('muted', chip.text)).join(' ')
 }
 
-function joinChips(chips: readonly Chip[], theme: FooterTheme, snapshot: FooterSnapshot): string {
-  return chips.map((chip) => theme.fg(chipColor(chip.key, snapshot), chip.text)).join(' ')
-}
-
-function chipColor(key: string, snapshot: FooterSnapshot): string {
-  switch (key) {
-    case 'context':
-      if (snapshot.contextPercent === null) return 'muted'
-      if (snapshot.contextPercent > 90) return 'error'
-      if (snapshot.contextPercent > 70) return 'warning'
-      return 'muted'
-    case 'git':
-      return 'muted'
-    case 'effort':
-      return 'muted'
-    default:
-      return 'muted'
-  }
-}
-
-function fits(left: string, right: string, width: number): boolean {
-  return visibleWidth(left) + 2 + visibleWidth(right) <= width
-}
 
 function dropIndex(chips: readonly Chip[]): number {
   for (const key of DROP_ORDER) {
@@ -260,46 +288,68 @@ function dropIndex(chips: readonly Chip[]): number {
   return -1
 }
 
+interface StatsTotals {
+  totalTokens: number
+  cacheTokens: number
+  cacheHitPercent: number | null
+  cost: number
+}
+
+function entryUsage(raw: EntryLike): UsageLike | undefined {
+  if (raw.type === 'usage') return raw.usage
+  if (raw.type === 'message') {
+    return raw.message?.role === 'assistant' ? raw.message.usage : undefined
+  }
+  if (raw.type === 'compaction' || raw.type === 'branch_summary') return raw.usage
+  return undefined
+}
+
 function readStats(
   session: FooterSessionLike | undefined,
   cache: FooterStatsCache | undefined,
-): { totalTokens: number; cacheTokens: number; cost: number } {
-  if (!session) return { totalTokens: 0, cacheTokens: 0, cost: 0 }
+): StatsTotals {
+  if (!session) return { totalTokens: 0, cacheTokens: 0, cacheHitPercent: null, cost: 0 }
 
   const entries = session.getEntries()
   const entryCount = session.getEntryCount?.() ?? entries.length
   if (cache !== undefined && cache.entryCount === entryCount) {
-    return { totalTokens: cache.totalTokens, cacheTokens: cache.cacheTokens, cost: cache.cost }
+    return {
+      totalTokens: cache.totalTokens,
+      cacheTokens: cache.cacheTokens,
+      cacheHitPercent: cache.cacheHitPercent,
+      cost: cache.cost,
+    }
   }
 
   let totalTokens = 0
   let cacheTokens = 0
+  let cacheHitPercent: number | null = null
   let cost = 0
   for (const raw of entries) {
     if (!isEntry(raw)) continue
-    const usage =
-      raw.type === 'usage'
-        ? raw.usage
-        : raw.type === 'message'
-          ? raw.message?.role === 'assistant'
-            ? raw.message.usage
-            : undefined
-          : raw.type === 'compaction' || raw.type === 'branch_summary'
-            ? raw.usage
-            : undefined
+    const usage = entryUsage(raw)
     if (usage === undefined) continue
+
     totalTokens += usage.totalTokens ?? 0
     cacheTokens += (usage.cacheRead ?? 0) + (usage.cacheWrite ?? 0)
     cost += usage.cost?.total ?? 0
+
+    // Cache hit rate of the most recent assistant turn: cache reads over the
+    // whole prompt (fresh input + cache read + cache write).
+    if (raw.type === 'message' && raw.message?.role === 'assistant') {
+      const prompt = (usage.input ?? 0) + (usage.cacheRead ?? 0) + (usage.cacheWrite ?? 0)
+      cacheHitPercent = prompt > 0 ? ((usage.cacheRead ?? 0) / prompt) * 100 : 0
+    }
   }
 
   if (cache !== undefined) {
     cache.entryCount = entryCount
     cache.totalTokens = totalTokens
     cache.cacheTokens = cacheTokens
+    cache.cacheHitPercent = cacheHitPercent
     cache.cost = cost
   }
-  return { totalTokens, cacheTokens, cost }
+  return { totalTokens, cacheTokens, cacheHitPercent, cost }
 }
 
 function isEntry(value: unknown): value is EntryLike {
@@ -332,6 +382,12 @@ export function createFooterFactory(
   config: FooterConfig,
   theme: Theme | (() => Theme),
 ): DshFooter {
-  const cache: FooterStatsCache = { entryCount: -1, totalTokens: 0, cacheTokens: 0, cost: 0 }
+  const cache: FooterStatsCache = {
+    entryCount: -1,
+    totalTokens: 0,
+    cacheTokens: 0,
+    cacheHitPercent: null,
+    cost: 0,
+  }
   return new DshFooter(() => snapshotFooter(ctx, data, cache), config, theme)
 }

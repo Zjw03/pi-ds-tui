@@ -53,7 +53,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 
 | Feature | Entry | Config switch |
 | --- | --- | --- |
-| dsh-style footer: cwd, context, tokens, cache, cost, git, effort, model | automatic | `footer.enabled` |
+| dsh-style footer: cwd and chips on the first line, a full-width context bar (`42% · 128k · CH 87%`), model and statuses below | automatic | `footer.enabled` |
 | Header: DeepSeek whale + `DEEPSEEK`/`PI` block wordmark + model/effort + cwd + tip + tagline | automatic | `header.enabled` / `header.logo` |
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
@@ -64,8 +64,17 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Markdown: dialect Mermaid (`statediagram`, `classdiagram`, `erdiagram`, `sequencediagram`) as Unicode art | automatic | `markdown.enabled` / `markdown.mermaid` |
 | Config status | `/ds-ui` | always available |
 
-The footer drops low-priority chips on narrow terminals in this order:
-cost → cache → tokens → git → effort. Context and the model stay.
+The footer has three rows:
+
+```text
+~/projects/pi-ds-tui  Σ 35k  cache 28k  $0.04  git:main  think:high
+███████████████████░░░░░░░░░░░░░░░░░░░░░░░ 42% · 128k · CH 87%
+                                             deepseek-flash · high
+```
+
+The second row is one meter: `█` fill and `░` track spanning the terminal, with the readout right-aligned in the track. Fill and readout turn `warning` from 80% and `error` from 95%. `CH` is the cache-hit rate of the most recent assistant turn (cache reads over the whole prompt).
+
+On narrow terminals the first row drops chips in this order: cost → cache → tokens → git → effort. The bar, the readout and the model stay.
 
 A collapsed `read` row shows only its header, and a collapsed shell row keeps its last five lines, matching pi's own density. `ctrl+o` expands every tool result; there is no separate command.
 

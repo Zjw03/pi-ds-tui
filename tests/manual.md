@@ -19,11 +19,15 @@
 
 ## Footer
 
-- [ ] 底部出现三行：cwd；context/tokens/cache/cost/git/effort + model；扩展状态。
-- [ ] 宽度 120 时所有芯片可见。
-- [ ] 宽度 40 时只保留 context 与 model，且不换行、不溢出。
-- [ ] 中文/emoji cwd 不破坏对齐。
-- [ ] 切换 dsh-dark / dsh-light，颜色正确，无旧颜色残留。
+- [ ] 第一行：cwd 后跟 `Σ tokens`、`cache`、`$cost`、`git:branch`、`think:level`。
+- [ ] 第二行：整行上下文条，`█` 为已用、`░` 为空，右对齐回显 `42% · 128k · CH 87%`。
+- [ ] 第三行：右侧对齐 `model · thinking`；有扩展状态时状态显示在左侧。
+- [ ] 条长随终端宽度伸缩，百分比变化时填充长度同步变化。
+- [ ] 占用 ≥ 80% 时条与数字转 `warning`，≥ 95% 转 `error`。
+- [ ] 新会话无助手消息时 `CH` 不显示；上下文未知时显示 `?`。
+- [ ] 宽度 40 时第一行依次丢 cost → cache → tokens → git → effort，条与 model 保留。
+- [ ] 中文/emoji cwd 不破坏对齐；条始终恰好占满一行。
+- [ ] 切换 dsh-dark / dsh-light，条的颜色正确，无旧颜色残留。
 - [ ] `footer.enabled: false` 后恢复 pi 内置 footer。
 
 ## M5 工具卡
