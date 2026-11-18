@@ -7,7 +7,8 @@
  *
  * - `/ds-*` commands in the README table vs the commands the extension registers
  * - files named in the README layout tree vs files on disk (both directions for
- *   `extensions/`, one direction for tests/scripts/themes/docs)
+ *   `extensions/`, one direction for tests/scripts/themes; `docs/` is local-only
+ *   and optional, so a fresh clone without it still passes)
  * - the README config sample vs `DEFAULT_CONFIG`
  * - relative Markdown links
  * - a blocklist of features that were removed, in the docs that describe the
@@ -15,9 +16,9 @@
  *
  * Run: node scripts/check-docs.mjs (part of `npm run verify`).
  */
-import { mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, join, relative } from 'node:path'
+import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -81,7 +82,7 @@ if (!layoutBlock) {
     ...readdirSync(join(root, 'tests')).map((name) => name),
     ...readdirSync(join(root, 'scripts')),
     ...readdirSync(join(root, 'themes')),
-    ...readdirSync(join(root, 'docs')),
+    ...(existsSync(join(root, 'docs')) ? readdirSync(join(root, 'docs')) : []),
     'README.md',
     'package.json',
     'LICENSE',

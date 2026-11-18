@@ -2,6 +2,8 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
+The look and layout are modelled on [dsh-TUI](https://github.com/ccch1mneyyy/dsh-TUI), the DeepSeek TUI plugin. See [Credits](#credits).
+
 > Status: **feature-complete for the dsh look**. The package ships a dsh-style footer, header, editor prefix, working row, Markdown dialect rendering, tool cards and an inline settings panel. Permission prompts, the todo panel and status-line reporting are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages. `npm run verify` also runs a switch matrix and a docs consistency gate.
 
 ## Install
@@ -183,10 +185,9 @@ tests/
   markdown.test.ts
   switch-matrix.test.ts
   manual.md
-docs/
-  pi-ui-extension-surface.md
-  pi-ui-extension-todo.md
 ```
+
+`docs/` holds local design notes on pi's extension surface. It is not tracked by git and is not part of any release.
 
 ## Scope
 
@@ -201,7 +202,20 @@ Permission prompts are **not** part of this package. Use your dedicated permissi
 
 The goal/todo panel is **not** part of this package. Use `@juicesharp/rpiv-todo`; pi-ds-tui does not render a todo widget.
 
-The transcript shell, built-in message components, side panel, pending-message area, and fullscreen internals have no public extension slot and are not implemented. See [docs/pi-ui-extension-surface.md](docs/pi-ui-extension-surface.md) for the full boundary.
+The transcript shell, built-in message components, side panel, pending-message area, and fullscreen internals have no public extension slot and are not implemented.
+
+## Credits
+
+The UI is modelled on [dsh-TUI](https://github.com/ccch1mneyyy/dsh-TUI) by [ccch1mneyyy](https://github.com/ccch1mneyyy), the officially recommended DeepSeek TUI plugin, and follows it closely:
+
+- the three-line footer (cwd/branch with model on the right, full-width context meter, extension statuses) and its blue ramp
+- the header: 13-row pixel whale, block `DEEPSEEK`/`PI` wordmark, tip and tagline layout
+- the `❯` editor prompt, the working row in the editor's top border, and the collapsed tool-row density
+- the `dsh-light` palette and the glyphs used for tool and transcript rows
+
+Ported directly from that project: the 25x40 whale sprite in `extensions/ui/whale.ts`, the block wordmark faces in `extensions/ui/bigfont.ts`, and the glyph set in `extensions/ui/icons.ts`. Everything else is implemented independently against pi's public extension APIs; no dsh-TUI application code is vendored.
+
+dsh-TUI is MIT licensed, and this package is MIT licensed as well. Thanks to its author for the design.
 
 ## License
 
