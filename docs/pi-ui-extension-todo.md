@@ -45,12 +45,12 @@
 
 > M2 完成记录：`npm run verify` 通过（71 tests）；header（鲸鱼 + DEEPSEEK/PI 大字 + 模型/effort + cwd + tip + 欢迎语）、editor 前缀、working row、状态行已接入；header 在 `resources_discover` 后重新夺回槽位，`/ds-header` 可手动重放；真机清单见 `tests/manual.md`。
 
-**M3 Widgets**
-- [x] T3.1 Widget above editor
-- [x] T3.2 Widget below editor
-- [x] T3.3 Widget 清理
+**M3 Widgets（已移除）**
+- [x] T3.1 Widget above editor（已移除：rpiv-todo 提供）
+- [x] T3.2 Widget below editor（已移除）
+- [x] T3.3 Widget 清理（已移除）
 
-> M3 完成记录：`npm run verify` 通过（86 tests）；goal/todo 与提示 widget 已接入，`/ds-widgets` 可折叠；真机清单见 `tests/manual.md`。
+> M3 说明：目标/todo 面板由 `@juicesharp/rpiv-todo` 提供；pi-ds-tui 不再实现 editor widget，也不读写 `widgets` 配置。
 
 **M4 Markdown**
 - [ ] T4.1 Transformer 骨架
@@ -137,7 +137,6 @@ extensions/
     header.ts
     editor.ts
     working.ts
-    widgets.ts
   transcript/
     tool-card.ts
     tool-call.ts
@@ -359,42 +358,9 @@ tests/
 
 ---
 
-## M3 Widgets
+## M3 Widgets（已移除）
 
-> 状态：已完成。`npm run verify` 全绿；两个 widget 有独立开关与清理路径。
-
-### T3.1 Widget above editor
-
-- 依赖：T2.3
-- 文件：`extensions/ui/widgets.ts`
-- API：`ctx.ui.setWidget(key, factory)`（默认 placement）
-- 步骤：
-  1. 画 todo/目标面板，支持折叠。
-  2. 高度上限由配置控制。
-- 完成：不挤压 editor；窄屏自动收起。
-- 验证：快照 + 手动折叠。
-
-### T3.2 Widget below editor
-
-- 依赖：T3.1
-- 文件：`extensions/ui/widgets.ts`
-- API：`ctx.ui.setWidget(key, factory, { placement: "belowEditor" })`
-- 步骤：
-  1. 画提示/快捷键/状态。
-  2. 与 footer 不重复。
-- 完成：不遮挡 footer；关闭后消失。
-- 验证：快照 + 手动。
-
-### T3.3 Widget 清理
-
-- 依赖：T3.1、T3.2
-- 文件：`extensions/ui/widgets.ts`
-- API：`setWidget(key, undefined)`
-- 步骤：
-  1. 每个 widget 有独立 key。
-  2. 关闭开关或退出时清理。
-- 完成：反复开关不叠加、不残留空行。
-- 验证：连续开关 5 次。
+> 目标/todo 面板与 editor 下方提示 widget 已移除。todo 由 `@juicesharp/rpiv-todo` 提供；pi-ds-tui 不再调用 `setWidget`，也不读写 `widgets` 配置。
 
 ---
 

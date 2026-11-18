@@ -8,7 +8,7 @@
 
 - [ ] `pi -e .`（默认 fullscreen）能启动，无启动报错。
 - [ ] `pi -e . --tui-mode regular` 能启动。
-- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/header/editor/working/status/widgets/toolCards 开关与 warnings。
+- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/header/editor/working/status/toolCards 开关与 warnings。
 
 ## Footer
 
@@ -32,13 +32,12 @@
 
 ## 组合开关
 
-- [ ] 只关 footer：工具卡与 widget 正常。
-- [ ] 只关 toolCards：footer 与 widget 正常。
+- [ ] 只关 footer：工具卡正常。
+- [ ] 只关 toolCards：footer 正常。
 - [ ] 只关 header：其余 chrome 正常。
 - [ ] 只关 editor：恢复 pi 默认编辑器。
 - [ ] 只关 working：恢复 pi 默认 working 行。
 - [ ] 只关 status：footer 不再出现 `working` 状态。
-- [ ] 只关 widgets：上下 widget 都消失，editor/footer 正常。
 - [ ] `enabled: false`：完全恢复 pi 默认外观与命令集（除 `/ds-ui`）。
 
 ## M2 Header
@@ -76,13 +75,7 @@
 - [ ] 关闭 `status.enabled` 后不再写入状态。
 - [ ] 关闭自定义 footer 时，pi 内置 footer 也能看到该状态。
 
-## M3 Widgets
+## M3 Widgets（已移除）
 
-- [ ] editor 上方显示 `Goal`、目标文本与 todo 列表。
-- [ ] 已完成项显示 `✓`，未完成项显示 `◻`。
-- [ ] `/ds-widgets` 在展开/折叠间切换，折叠时只显示 `x/y done`。
-- [ ] `widgets.maxHeight` 生效，超出时显示 `… +N more`。
-- [ ] `widgets.above: false` 后上方 widget 消失，editor 不受影响。
-- [ ] `widgets.below: true` 时 editor 下方显示快捷键提示，且不与 footer 重复。
-- [ ] `widgets.below: false` 后下方 widget 消失。
-- [ ] 切换会话/退出后两个 widget 都清理，不残留空行或旧内容。
+- 目标/todo 面板与 `/ds-widgets` 已移除；使用 `@juicesharp/rpiv-todo`。
+- pi-ds-tui 不再注册 editor widget，也不读写 `widgets` 配置。

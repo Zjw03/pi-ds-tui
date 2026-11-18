@@ -249,9 +249,9 @@
 | 自定义消息 / 条目 | 无直接对应 | dsh 的状态行/通知需要改成消息或条目 |
 | Markdown | `Markdown.tsx` + 表格/公式/mermaid | pi-tui 的 `Markdown` 已支持表格与 LaTeX→Unicode；mermaid 走 transformer |
 | Working row | `WorkingSpinner`、`ActivityLine` | 文案与帧动画可映射 |
-| Widget above | `GoalTodoPanel`、todo/spinner | 单列 dock，可放 |
+| Widget above | `GoalTodoPanel`、todo/spinner | 由 `@juicesharp/rpiv-todo` 提供，pi-ds-tui 不实现 |
 | Editor | `PromptInput` | 外观可移植；`@` 提及、图片、选区需用 autocomplete / 自定义 editor 扩展 |
-| Widget below | 无 | 可用于放状态或提示 |
+| Widget below | 无 | 已移除；需要时由专门包提供 |
 | Footer | `StatusLine.tsx`（50KB） | 需要裁剪；dsh 的 mode/effort/cache/cost/tps/上下文条比 pi footer 多 |
 | Overlays | picker、`AskUserQuestionPanel`、tooltip、图片预览 | 全部走 `ctx.ui.custom()`；权限审批由专门包负责 |
 | Autocomplete | `PromptInput` 的补全菜单 | 用 `addAutocompleteProvider` 叠加 |
@@ -315,9 +315,9 @@
 | 阶段 | 内容 | 依赖 | 产出 | 验收 |
 | --- | --- | --- | --- | --- |
 | 0 | 基线：主题 JSON、包清单、配置骨架 | 无 | 可切换的 dsh 风格主题 | 56 个 token 全覆盖；窄宽度不溢出 |
-| 1 | 薄切片：Footer + 一个简单工具卡 + 一个 overlay | 0 | 端到端可跑的最小闭环 | 三种状态正常；Esc/Enter 不抢键 |
+| 1 | 薄切片：Footer + 一个简单工具卡 | 0 | 端到端可跑的最小闭环 | 三种状态正常；Esc/Enter 不抢键 |
 | 2 | Chrome 补全：Header + Editor 外观 + Working row | 1 | 顶部/底部完整 | 输入、IME、粘贴、应用快捷键不回归 |
-| 3 | Widget above / below | 2 | todo、提示、按钮、单列 dock | 不挤压 editor/footer；窄屏可隐藏 |
+| 3 | Widget above / below（已移除；todo 由 rpiv-todo 提供） | 2 | — | 不再注册 editor widget |
 | 4 | Markdown transformer | 1 | mermaid、公式、标签清理 | 表格/公式/mermaid 正常；不重复渲染 |
 | 5 | 工具卡铺开：call/result、展开、diff、长输出 | 1、4 | dsh 风格工具卡 | partial、长输出、窄宽度、无 ANSI 溢出 |
 | 6 | Overlay 铺开：问卷、picker、设置（权限审批由专门包负责） | 1、5 | 临时 UI 完整 | 焦点、键盘、Esc、blocked、窄屏 |

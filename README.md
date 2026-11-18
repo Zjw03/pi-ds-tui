@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M3 widgets**. The package ships a dsh-style footer, header, editor prefix, working row, status line, `read` tool card, and editor widgets. Permission prompts are intentionally not implemented; use your dedicated permission package.
+> Status: **M3 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line and a `read` tool card. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
 
 ## Install
 
@@ -33,13 +33,6 @@ The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defa
   "header": { "enabled": true, "logo": true },
   "editor": { "enabled": true, "prefix": "❯" },
   "working": { "enabled": true, "message": null },
-  "widgets": {
-    "above": true,
-    "below": false,
-    "maxHeight": 8,
-    "goal": "Ship the dsh-tui style interface",
-    "todos": ["[x] Header and footer", "[x] Editor prefix", "[ ] Widgets", "[ ] Tool cards"]
-  },
   "markdown": { "enabled": true, "mermaid": true, "stripPromptTags": true },
   "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 24 },
   "autocomplete": { "enabled": true },
@@ -61,8 +54,6 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
 | Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
-| Widget above editor: goal/todo panel, collapse with `/ds-widgets` | automatic | `widgets.above` |
-| Widget below editor: key hints | automatic | `widgets.below` |
 | `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
 | Config status | `/ds-ui` | always available |
 
@@ -75,7 +66,6 @@ cost → cache → tokens → git → effort → mode. Context and the model sta
 | --- | --- |
 | `/ds-ui` | Show config path, feature switches, and warnings |
 | `/ds-header` | Re-apply the pi-ds-tui header |
-| `/ds-widgets` | Toggle the goal/todo widget between expanded and collapsed |
 
 ## Troubleshooting
 
@@ -106,7 +96,7 @@ Manual smoke tests are in [tests/manual.md](tests/manual.md).
 
 ```text
 extensions/
-  index.ts            extension entry (/ds-ui, /ds-header, /ds-widgets)
+  index.ts            extension entry (/ds-ui, /ds-header)
   config.ts           config schema, defaults, validation
   ui/
     theme.ts          theme wrappers
@@ -121,7 +111,6 @@ extensions/
     editor.ts         CustomEditor subclass with the prompt glyph
     working.ts        working message/indicator
     status.ts         extension status key
-    widgets.ts        goal/todo and hint widgets
   version.ts          header version
   transcript/
     tool-card.ts      registerToolRenderer resolver
@@ -144,7 +133,6 @@ tests/
   editor.test.ts
   working.test.ts
   status.test.ts
-  widgets.test.ts
   tool-card.test.ts
   manual.md
 docs/
@@ -156,12 +144,14 @@ docs/
 
 Only UI that pi's public extension surface can replace is implemented:
 
-- header, footer, editor, widgets, working row
+- header, footer, editor, working row
 - tool cards, custom messages/entries, markdown transformation
 - autocomplete, notifications
 - themes, terminal title, editor content
 
 Permission prompts are **not** part of this package. Use your dedicated permission package; pi-ds-tui does not intercept tool calls or render approval dialogs.
+
+The goal/todo panel is **not** part of this package. Use `@juicesharp/rpiv-todo`; pi-ds-tui does not render a todo widget.
 
 The transcript shell, built-in message components, side panel, pending-message area, and fullscreen internals have no public extension slot and are not implemented. See [docs/pi-ui-extension-surface.md](docs/pi-ui-extension-surface.md) for the full boundary.
 
