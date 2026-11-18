@@ -64,7 +64,6 @@ export interface DsUiConfig {
   readonly widgets: WidgetsConfig
   readonly markdown: MarkdownConfig
   readonly toolCards: ToolCardsConfig
-  readonly overlays: { readonly enabled: boolean }
   readonly autocomplete: { readonly enabled: boolean }
   readonly messages: { readonly enabled: boolean }
   readonly entries: { readonly enabled: boolean }
@@ -91,7 +90,6 @@ export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
   },
   markdown: { enabled: true, mermaid: true, stripPromptTags: true },
   toolCards: { enabled: true, diffMode: 'auto', collapsedLines: 24 },
-  overlays: { enabled: true },
   autocomplete: { enabled: true },
   messages: { enabled: true },
   entries: { enabled: true },
@@ -159,7 +157,6 @@ export function loadConfig(options: LoadConfigOptions = {}): ConfigLoadResult {
     widgets: readWidgets(raw, warnings),
     markdown: readMarkdown(raw, warnings),
     toolCards: readToolCards(raw, warnings),
-    overlays: { enabled: readSectionBoolean(raw, 'overlays', 'enabled', true, warnings) },
     autocomplete: { enabled: readSectionBoolean(raw, 'autocomplete', 'enabled', true, warnings) },
     messages: { enabled: readSectionBoolean(raw, 'messages', 'enabled', true, warnings) },
     entries: { enabled: readSectionBoolean(raw, 'entries', 'enabled', true, warnings) },
@@ -179,7 +176,6 @@ const TOP_LEVEL_KEYS = new Set([
   'widgets',
   'markdown',
   'toolCards',
-  'overlays',
   'autocomplete',
   'messages',
   'entries',

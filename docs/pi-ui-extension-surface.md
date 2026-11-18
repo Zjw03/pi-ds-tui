@@ -253,7 +253,7 @@
 | Editor | `PromptInput` | 外观可移植；`@` 提及、图片、选区需用 autocomplete / 自定义 editor 扩展 |
 | Widget below | 无 | 可用于放状态或提示 |
 | Footer | `StatusLine.tsx`（50KB） | 需要裁剪；dsh 的 mode/effort/cache/cost/tps/上下文条比 pi footer 多 |
-| Overlays | picker、`ApprovalPanel`、`AskUserQuestionPanel`、tooltip、图片预览 | 全部走 `ctx.ui.custom()` |
+| Overlays | picker、`AskUserQuestionPanel`、tooltip、图片预览 | 全部走 `ctx.ui.custom()`；权限审批由专门包负责 |
 | Autocomplete | `PromptInput` 的补全菜单 | 用 `addAutocompleteProvider` 叠加 |
 | thinking 标签 | thinking 折叠标题 | 直接映射 |
 | 工具展开 | 展开/收起全部 | 直接映射 |
@@ -320,7 +320,7 @@
 | 3 | Widget above / below | 2 | todo、提示、按钮、单列 dock | 不挤压 editor/footer；窄屏可隐藏 |
 | 4 | Markdown transformer | 1 | mermaid、公式、标签清理 | 表格/公式/mermaid 正常；不重复渲染 |
 | 5 | 工具卡铺开：call/result、展开、diff、长输出 | 1、4 | dsh 风格工具卡 | partial、长输出、窄宽度、无 ANSI 溢出 |
-| 6 | Overlay 铺开：审批、问卷、picker、设置 | 1、5 | 临时 UI 完整 | 焦点、键盘、Esc、blocked、窄屏 |
+| 6 | Overlay 铺开：问卷、picker、设置（权限审批由专门包负责） | 1、5 | 临时 UI 完整 | 焦点、键盘、Esc、blocked、窄屏 |
 | 7 | Autocomplete + 编辑器内容 | 2 | `@` 提及、命令补全 | 不抢内置 `/` 与文件补全 |
 | 8 | 自定义消息 / 条目 | 1 | 状态、摘要、通知条目 | 只匹配自己的 `customType` |
 | 9 | 原始输入 / 鼠标（可选） | 2、6 | hover、点击、滚动 | regular + fullscreen；鼠标关闭仍可键盘操作 |
@@ -341,7 +341,7 @@
 
 ### 10.5 最小可用集
 
-只做：**主题 + Footer + 一个工具卡 + 审批 overlay**。这四样覆盖日常可见的大部分区域，且全部走公开 API。
+只做：**主题 + Footer + 一个工具卡**。这些覆盖日常可见的大部分区域，且全部走公开 API。
 
 ### 10.6 不建议的顺序
 

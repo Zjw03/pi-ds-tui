@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M2 chrome**. The package ships a dsh-style footer, header, editor prefix, working row, status line, a `read` tool card, and an approval overlay, all gated by config switches.
+> Status: **M3 widgets**. The package ships a dsh-style footer, header, editor prefix, working row, status line, `read` tool card, and editor widgets. Permission prompts are intentionally not implemented; use your dedicated permission package.
 
 ## Install
 
@@ -42,7 +42,6 @@ The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defa
   },
   "markdown": { "enabled": true, "mermaid": true, "stripPromptTags": true },
   "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 24 },
-  "overlays": { "enabled": true },
   "autocomplete": { "enabled": true },
   "messages": { "enabled": true },
   "entries": { "enabled": true },
@@ -65,7 +64,6 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Widget above editor: goal/todo panel, collapse with `/ds-widgets` | automatic | `widgets.above` |
 | Widget below editor: key hints | automatic | `widgets.below` |
 | `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
-| Approval overlay: Allow / Deny / Always allow | `/ds-approve` | `overlays.enabled` |
 | Config status | `/ds-ui` | always available |
 
 The footer drops low-priority chips on narrow terminals in this order:
@@ -78,7 +76,6 @@ cost → cache → tokens → git → effort → mode. Context and the model sta
 | `/ds-ui` | Show config path, feature switches, and warnings |
 | `/ds-header` | Re-apply the pi-ds-tui header |
 | `/ds-widgets` | Toggle the goal/todo widget between expanded and collapsed |
-| `/ds-approve` | Preview the approval overlay (TUI only) |
 
 ## Troubleshooting
 
@@ -109,7 +106,7 @@ Manual smoke tests are in [tests/manual.md](tests/manual.md).
 
 ```text
 extensions/
-  index.ts            extension entry (/ds-ui, /ds-approve)
+  index.ts            extension entry (/ds-ui, /ds-header, /ds-widgets)
   config.ts           config schema, defaults, validation
   ui/
     theme.ts          theme wrappers
@@ -131,9 +128,6 @@ extensions/
     tool-call.ts      read call row
     tool-result.ts    read result body
     types.ts          public-type derivations
-  overlays/
-    base.ts           bordered panel helper
-    approval.ts       approval overlay + /ds-approve
 themes/
   dsh-dark.json
   dsh-light.json
@@ -152,7 +146,6 @@ tests/
   status.test.ts
   widgets.test.ts
   tool-card.test.ts
-  overlays.test.ts
   manual.md
 docs/
   pi-ui-extension-surface.md
@@ -165,8 +158,10 @@ Only UI that pi's public extension surface can replace is implemented:
 
 - header, footer, editor, widgets, working row
 - tool cards, custom messages/entries, markdown transformation
-- overlays, autocomplete, notifications
+- autocomplete, notifications
 - themes, terminal title, editor content
+
+Permission prompts are **not** part of this package. Use your dedicated permission package; pi-ds-tui does not intercept tool calls or render approval dialogs.
 
 The transcript shell, built-in message components, side panel, pending-message area, and fullscreen internals have no public extension slot and are not implemented. See [docs/pi-ui-extension-surface.md](docs/pi-ui-extension-surface.md) for the full boundary.
 

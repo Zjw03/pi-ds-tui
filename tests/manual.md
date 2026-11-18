@@ -1,12 +1,14 @@
 # M1 手动冒烟清单
 
 > 自动化验证先跑 `npm run verify`。下面这些项需要真实终端与真实 pi。
+>
+> 权限审批由专门的包负责；pi-ds-tui 不实现审批对话框，也不拦截工具调用。
 
 ## 启动
 
 - [ ] `pi -e .`（默认 fullscreen）能启动，无启动报错。
 - [ ] `pi -e . --tui-mode regular` 能启动。
-- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/toolCards/overlays 开关与 warnings。
+- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/header/editor/working/status/widgets/toolCards 开关与 warnings。
 
 ## Footer
 
@@ -28,20 +30,10 @@
 - [ ] `toolCards.enabled: false` 后恢复 pi 默认 read 卡片。
 - [ ] 其他工具（bash/edit/grep）保持 pi 默认渲染。
 
-## 审批 overlay
-
-- [ ] `/ds-approve` 打开居中浮层，标题、tool、detail 可见。
-- [ ] 上下键移动 `❯`，Enter 返回 allow/deny/always，Esc 取消。
-- [ ] 浮层打开时 editor 不接收输入。
-- [ ] 40 列宽下仍可读，不溢出。
-- [ ] 连续打开/关闭不叠加、不残留焦点。
-- [ ] `overlays.enabled: false` 后 `/ds-approve` 不存在。
-
 ## 组合开关
 
-- [ ] 只关 footer：工具卡与 overlay 正常。
-- [ ] 只关 toolCards：footer 与 overlay 正常。
-- [ ] 只关 overlays：footer 与工具卡正常。
+- [ ] 只关 footer：工具卡与 widget 正常。
+- [ ] 只关 toolCards：footer 与 widget 正常。
 - [ ] 只关 header：其余 chrome 正常。
 - [ ] 只关 editor：恢复 pi 默认编辑器。
 - [ ] 只关 working：恢复 pi 默认 working 行。

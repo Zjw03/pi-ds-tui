@@ -32,10 +32,10 @@
 - [x] T1.1 Footer 骨架
 - [x] T1.2 Footer 芯片与优先级
 - [x] T1.3 第一个工具卡（read）
-- [x] T1.4 第一个 overlay（审批）
+- [x] T1.4 第一个 overlay（审批，已移除：权限由专门包负责）
 - [x] T1.5 M1 开关与冒烟
 
-> M1 完成记录：`npm run verify` 通过（48 tests）；footer、read 卡片、审批 overlay 已接入；真机冒烟清单见 `tests/manual.md`。
+> M1 完成记录：`npm run verify` 通过（48 tests）；footer、read 卡片已接入；审批 overlay 已按需求移除；真机冒烟清单见 `tests/manual.md`。
 
 **M2 Chrome**
 - [x] T2.1 Header
@@ -69,7 +69,7 @@
 
 **M6 Overlays**
 - [ ] T6.1 Overlay 基类
-- [ ] T6.2 审批面板完整版
+- [x] T6.2 权限审批（不做，由专门包负责）
 - [ ] T6.3 问卷面板
 - [ ] T6.4 Picker
 - [ ] T6.5 设置面板
@@ -149,7 +149,6 @@ extensions/
     entries.ts
   overlays/
     base.ts
-    approval.ts
     questions.ts
     pickers.ts
     settings.ts
@@ -244,9 +243,9 @@ tests/
 
 ---
 
-## M1 薄切片（Footer + 一个工具卡 + 一个 overlay）
+## M1 薄切片（Footer + 一个工具卡）
 
-> 状态：已完成。`npm run verify` 全绿；三项能力都有独立开关；`/ds-approve` 可手动触发。
+> 状态：已完成。`npm run verify` 全绿；footer 与 read 卡片都有独立开关；审批 overlay 已按需求移除。
 
 ### T1.1 Footer 骨架
 
@@ -285,25 +284,21 @@ tests/
 - 完成：长文件折叠；窄宽度不溢出；未知工具不受影响。
 - 验证：`node --test tests/tool-card.test.ts`；`pi -e .` 读一个长文件。
 
-### T1.4 第一个 overlay（审批）
+### T1.4 第一个 overlay（审批，已移除）
 
-- 依赖：T0.4、T0.5
-- 文件：`extensions/overlays/base.ts`、`approval.ts`
-- API：`ctx.ui.custom(factory, { overlay: true, blocked })`
-- 步骤：
-  1. 画标题、说明、Allow / Deny / Always 选项。
-  2. 上下键选择，Enter 确认，Esc 取消。
-  3. `done(result)` 结束；焦点不泄漏到 editor。
-- 完成：窄屏可读；blocked 状态正确；重复打开不叠加。
-- 验证：`node --test tests/overlays.test.ts`；手动触发一次确认。
+> 已移除：权限审批由专门的权限包负责。pi-ds-tui 不注册审批 overlay，也不拦截 `tool_call`。
+
+- 原文件：`extensions/overlays/base.ts`、`approval.ts`（已删除）
+- 原 API：`ctx.ui.custom(factory, { overlay: true, blocked })`
+- 原验证：`node --test tests/overlays.test.ts`（已删除）
 
 ### T1.5 M1 开关与冒烟
 
-- 依赖：T1.1–T1.4
+- 依赖：T1.1–T1.3
 - 文件：`extensions/config.ts`、`extensions/index.ts`
 - API：无
 - 步骤：
-  1. 给 footer / tool card / overlay 各加开关。
+  1. 给 footer / tool card 各加开关。
   2. 全部关闭时恢复 pi 默认外观。
   3. 写一段手动冒烟清单到 `tests/manual.md`。
 - 完成：任意单项关闭不影响其他项。
@@ -530,7 +525,7 @@ tests/
 
 ---
 
-## M6 Overlays
+## M6 Overlays（非权限）
 
 ### T6.1 Overlay 基类
 
@@ -544,15 +539,12 @@ tests/
 - 完成：所有 overlay 复用同一基类。
 - 验证：窄屏、resize、隐藏/显示。
 
-### T6.2 审批面板完整版
+### T6.2 权限审批（不实现）
 
-- 依赖：T6.1
-- 文件：`extensions/overlays/approval.ts`
-- 步骤：
-  1. 允许/拒绝/始终允许；详情可滚动。
-  2. 键盘优先；鼠标可选。
-- 完成：blocked 正确；取消不残留。
-- 验证：手动触发三种结果。
+> 权限审批由专门的权限包负责。pi-ds-tui 不注册审批 overlay，也不拦截 `tool_call`。
+
+- 原文件：`extensions/overlays/approval.ts`（已删除）
+- 原验证：`tests/overlays.test.ts`（已删除）
 
 ### T6.3 问卷面板
 
