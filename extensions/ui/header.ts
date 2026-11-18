@@ -2,7 +2,7 @@
  * Startup header.
  *
  * Wide terminals get the 13-row DeepSeek pixel whale beside the splash text
- * column: wordmark, block-font DEEPSEEK/HARNESS, model/effort, cwd, tip, then
+ * column: wordmark, block-font DEEPSEEK/PI, model/effort, cwd, tip, then
  * the welcome tagline under the whale. Medium terminals keep the whale with a
  * title line; narrow terminals fall back to text. `logo: false` always uses
  * the text block.
@@ -32,9 +32,9 @@ export interface HeaderTheme {
 const WHALE_GAP = 2
 const TEXT_INDENT = WHALE_WIDTH + WHALE_GAP
 const DEEPSEEK = 'DEEPSEEK'
-const HARNESS = 'HARNESS'
+const PI = 'PI'
 
-export const DEFAULT_TAGLINE = 'DeepSeek Harness \u00b7 Terminal UI'
+export const DEFAULT_TAGLINE = 'DeepSeek Pi \u00b7 Terminal UI'
 
 export const HEADER_TIPS = [
   'Use /commands to see everything',
@@ -108,13 +108,14 @@ function renderSplashText(info: HeaderInfo, width: number, theme: HeaderTheme): 
   const size = pickBigFont(width)
   if (size === null) {
     lines[2] = whaleBlue(theme.bold(DEEPSEEK))
-    lines[4] = whaleBlue(theme.bold(HARNESS))
+    lines[4] = whaleBlue(theme.bold(`${' '.repeat(Math.max(0, Math.floor((DEEPSEEK.length - PI.length) / 2)))}${PI}`))
   } else {
     const deepseek = renderBigWord(DEEPSEEK, size)
-    const harness = renderBigWord(HARNESS, size)
+    const pi = renderBigWord(PI, size)
+    const pad = Math.max(0, Math.floor((bigWordWidth(DEEPSEEK, size) - bigWordWidth(PI, size)) / 2))
     for (let row = 0; row < 5; row += 1) {
       lines[1 + row] = whaleBlue(deepseek[row] ?? '')
-      lines[7 + row] = whaleBlue(harness[row] ?? '')
+      lines[7 + row] = whaleBlue(`${' '.repeat(pad)}${pi[row] ?? ''}`)
     }
   }
 

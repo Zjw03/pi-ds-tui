@@ -50,8 +50,8 @@
 
 ## M2 Header
 
-- [ ] 宽度 ≥64 时显示 13 行像素鲸鱼 + `DEEPSEEK`/`HARNESS` 大字 + 模型/effort + cwd + tip。
-- [ ] 鲸鱼下方显示居中的欢迎语 `DeepSeek Harness · Terminal UI`。
+- [ ] 宽度 ≥64 时显示 13 行像素鲸鱼 + `DEEPSEEK`/`PI` 大字 + 模型/effort + cwd + tip。
+- [ ] 鲸鱼下方显示居中的欢迎语 `DeepSeek Pi · Terminal UI`。
 - [ ] 宽度 40–63 时显示鲸鱼 + 一行名称 + 模型/cwd/tip + 欢迎语。
 - [ ] 宽度 <40 时降级为纯文本；<16 时只留名称。
 - [ ] `header.logo: false` 时始终纯文本，但仍显示模型/cwd/tip/欢迎语。
