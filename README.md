@@ -73,6 +73,7 @@ The footer has two rows (plus one for extension statuses):
 
 - The branch follows the cwd, behind `⎇`, and only appears when the repository has one.
 - `model · thinking` is right-aligned on that same row, above the bar.
+- Every footer row keeps a one-column margin on both sides, so it lines up with extension widgets and status rows above it and the bar never touches the terminal edge.
 - The bar is one meter: `█` fill and `░` track spanning the terminal, readout right-aligned in the track. Fill and readout turn `warning` from 80% and `error` from 95%.
 - `CH` is the cache-hit rate of the most recent assistant turn (cache reads over the whole prompt).
 

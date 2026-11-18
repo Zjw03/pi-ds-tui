@@ -96,21 +96,27 @@ export function renderFooter(
   theme: FooterTheme,
 ): string[] {
   if (width <= 0) return []
+
+  // One column of margin on each side. The widget and status rows around the
+  // footer start at column 1, and the bar should not touch the terminal edges.
+  const margin = width >= 3 ? 1 : 0
+  const inner = width - margin * 2
   const lines: string[] = []
 
-  const status = layoutStatusLine(snapshot, config, width, theme)
+  const status = layoutStatusLine(snapshot, config, inner, theme)
   if (status.length > 0) lines.push(status)
 
   if (config.chips.includes('context')) {
-    const bar = renderContextBar(snapshot, width, theme)
+    const bar = renderContextBar(snapshot, inner, theme)
     if (bar.length > 0) lines.push(bar)
   }
 
   if (snapshot.statuses.length > 0) {
-    lines.push(theme.fg('dim', truncateMiddle(snapshot.statuses.join(' \u00b7 '), width)))
+    lines.push(theme.fg('dim', truncateMiddle(snapshot.statuses.join(' \u00b7 '), inner)))
   }
 
-  return lines
+  if (margin === 0) return lines
+  return lines.map((line) => ` ${line}`)
 }
 
 /** Fill and track glyphs for the context meter. */

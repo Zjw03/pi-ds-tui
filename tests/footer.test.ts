@@ -31,6 +31,7 @@ test('wide footer puts cwd, branch and model on the line above the bar', () => {
   assertWidth(lines, 120)
 
   const header = lines[0] ?? ''
+  assert.ok(header.startsWith(' '), 'footer lines share the one-column margin')
   assert.ok(header.includes('/home/user/projects/pi-ds-tui'))
   assert.ok(header.includes('\u2387 main'))
   assert.ok(header.trimEnd().endsWith('model-x \u00b7 high'))
@@ -42,7 +43,7 @@ test('wide footer puts cwd, branch and model on the line above the bar', () => {
   assert.ok(bar.includes('\u2588'))
   assert.ok(bar.includes('\u2591'))
 
-  assert.equal(lines[2], 'building')
+  assert.equal(lines[2]?.trim(), 'building')
   assert.equal(lines.length, 3)
 })
 
@@ -68,14 +69,15 @@ test('thinking is dropped when `effort` is not selected', () => {
   assert.ok(!header.includes('high'))
 })
 
-test('the bar fills the line and grows with the width', () => {
+test('the bar fills the inner width and grows with the terminal', () => {
   for (const width of [40, 80, 120]) {
     const lines = renderFooter(snapshot, width, DEFAULT_CONFIG.footer, theme)
     const bar = lines[1] ?? ''
-    assert.equal(bar.length, width)
+    const inner = width - 2
+    assert.equal(bar.length, width - 1)
     const filled = (bar.match(/\u2588/g) ?? []).length
     // 42% of the track, which excludes one space and the readout.
-    const track = width - '42% \u00b7 200k \u00b7 CH 87%'.length - 1
+    const track = inner - '42% \u00b7 200k \u00b7 CH 87%'.length - 1
     assert.equal(filled, Math.round(0.42 * track), `width ${width}`)
   }
 })

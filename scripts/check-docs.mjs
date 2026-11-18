@@ -21,7 +21,8 @@ import { basename, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const read = (path) => readFileSync(join(root, path), 'utf8')
+/** Normalize line endings: the checkout may be CRLF on Windows. */
+const read = (path) => readFileSync(join(root, path), 'utf8').replace(/\r\n/g, '\n')
 
 const errors = []
 const fail = (message) => errors.push(message)
