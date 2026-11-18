@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M5 complete, `/ds-config` added**. The package ships a dsh-style footer, header, editor prefix, working row, Markdown dialect rendering, tool cards and an in-terminal settings panel. Permission prompts, the todo panel and status-line reporting are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
+> Status: **feature-complete for the dsh look**. The package ships a dsh-style footer, header, editor prefix, working row, Markdown dialect rendering, tool cards and an inline settings panel. Permission prompts, the todo panel and status-line reporting are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages. `npm run verify` also runs a switch matrix and a docs consistency gate.
 
 ## Install
 
@@ -95,11 +95,12 @@ Also confirm pi-ds-tui is actually loaded: `pi list` should show it, or run `pi 
 
 ```bash
 npm install
-npm run verify        # typecheck + tests + public-API gate + theme gate
+npm run verify        # typecheck + tests + public-API, theme and docs gates
 npm run typecheck
 npm test
 npm run check:public-api
 npm run check:themes
+npm run check:docs         # README/manual vs code: commands, layout, config keys
 npm run preview:markdown   # render tests/fixtures/markdown-demo.md at 40/60/80/120 columns
 ```
 
@@ -154,6 +155,7 @@ themes/
 scripts/
   check-public-api.mjs
   check-themes.mjs
+  check-docs.mjs
 tests/
   config.test.ts
   width.test.ts
@@ -166,6 +168,7 @@ tests/
   tool-card.test.ts
   config-panel.test.ts
   markdown.test.ts
+  switch-matrix.test.ts
   manual.md
 docs/
   pi-ui-extension-surface.md

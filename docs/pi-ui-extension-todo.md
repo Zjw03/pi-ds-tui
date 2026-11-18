@@ -3,6 +3,8 @@
 > 配套文档：[pi-ui-extension-surface.md](pi-ui-extension-surface.md)。本文只列可执行任务，不写时间估算。
 >
 > 目标：用 pi 公开扩展 API 实现 dsh-tui 风格的 UI。不能扩展的区域不做，也不使用内部 import 或原型补丁。
+>
+> 状态：M0–M6 完成，X1–X5 完成；M7–M9（autocomplete、自定义消息/条目、鼠标）经核对与 pi 已有能力重复，已标记不做。
 
 ## 执行协议
 
@@ -81,27 +83,35 @@
 
 > M6 完成记录：`npm run verify` 通过（104 tests）；只做了 `/ds-config`，其余四项因重复或无公开 API 而不做。
 
-**M7 Autocomplete 与编辑器**
-- [ ] T7.1 Provider 骨架
-- [ ] T7.2 `@` 引用
-- [ ] T7.3 编辑器内容
+**M7 Autocomplete 与编辑器内容（不做）**
+- [x] T7.1 Provider 骨架（不做：pi 已有）
+- [x] T7.2 `@` 引用（不做：fff 已提供）
+- [x] T7.3 编辑器内容（不做：无调用方）
 
-**M8 消息与条目**
-- [ ] T8.1 自定义消息渲染
-- [ ] T8.2 自定义条目渲染
+> M7 说明：pi 自带 `CombinedAutocompleteProvider`（`/` 命令 + 参数补全），`@` 文件补全由 `@ff-labs/pi-fff` 包一层提供；`setEditorText`/`getEditorText`/`pasteToEditor` 只是工具函数，没有对应命令时不起作用。
 
-**M9 原始输入与鼠标（可选）**
-- [ ] T9.1 开关与空实现
-- [ ] T9.2 组件级鼠标
-- [ ] T9.3 回底按钮
-- [ ] T9.4 原始 SGR 兜底（仅必要时）
+**M8 消息与条目（不做）**
+- [x] T8.1 自定义消息渲染（不做：本包不发消息）
+- [x] T8.2 自定义条目渲染（不做：本包不写条目）
+
+> M8 说明：`registerMessageRenderer`/`registerEntryRenderer` 只对自己创建的内容生效；本包没有 `sendMessage`/`appendEntry`，注册后就是死代码。
+
+**M9 原始输入与鼠标（不做）**
+- [x] T9.1 开关与空实现（不做）
+- [x] T9.2 组件级鼠标（不做：pi 已自动包裹）
+- [x] T9.3 回底按钮（不做：已有按键/滚动条）
+- [x] T9.4 原始 SGR 兜底（不做）
+
+> M9 说明：pi 对每个 tool renderer 自动套 `MouseRegion`（点击展开）；fullscreen 已有 `fullscreenScrollbar`、`fullscreenWheelScrollLines`、`tui.altScreen.bottom`；`onTerminalInput` 原始解析没有需求。
 
 **横切**
-- [ ] X1 宽度安全巡检
-- [ ] X2 主题失效巡检
-- [ ] X3 焦点与 IME 巡检
-- [ ] X4 开关矩阵
-- [ ] X5 文档同步
+- [x] X1 宽度安全巡检（已有逐组件覆盖）
+- [x] X2 主题失效巡检（中在 manual）
+- [x] X3 焦点与 IME 巡检（中在 manual）
+- [x] X4 开关矩阵
+- [x] X5 文档同步
+
+> X 完成记录：`tests/switch-matrix.test.ts` 逐项验证 10 个开关的注册与监听器；`scripts/check-docs.mjs` 把 README/manual 与代码对上（命令、目录树、配置示例、失效特性）。
 
 ## 全局完成定义（DoD）
 
@@ -151,17 +161,13 @@ extensions/
     diff.ts
     card.ts
     markdown.ts
-    messages.ts
-    entries.ts
-  input/
-    autocomplete.ts
-    mouse.ts
 tests/
   width.test.ts
   footer.test.ts
   tool-card.test.ts
   markdown.test.ts
   config-panel.test.ts
+  switch-matrix.test.ts
 ```
 
 ---
@@ -535,114 +541,73 @@ tests/
 
 ---
 
-## M7 Autocomplete 与编辑器内容
+## M7 Autocomplete 与编辑器内容（不做）
 
-### T7.1 Provider 骨架
+> 结论：全部不做。
+> - pi 已有 `CombinedAutocompleteProvider`：`/` 命令、参数补全、`@` 文件补全。
+> - `@` 文件补全由已安装的 `@ff-labs/pi-fff` 包在 `current` 外面提供（FFF 索引），不需要再写一层。
+> - `setEditorText` / `getEditorText` / `pasteToEditor` 是给命令用的工具函数，本包没有需要它们的命令。
+> - dsh 独有的 `@session` / `@subagent` 引用在 `pi-cc-extensions/extensions/feature/reference` 里已有实现（约 1.1k 行），属于功能而非皮肤；需要时应单独立项或直接启用那个包。
 
-- 依赖：T2.2
-- 文件：`extensions/input/autocomplete.ts`
-- API：`ctx.ui.addAutocompleteProvider`
-- 步骤：
-  1. 匹配自定义触发符。
-  2. 不匹配时委托 `current`。
-- 完成：`/` 与文件补全行为不变。
-- 验证：输入 `/`、`@`、`Tab`。
+### T7.1 Provider 骨架（不做）
 
-### T7.2 `@` 引用
+- 原文件：`extensions/input/autocomplete.ts`
+- 原 API：`ctx.ui.addAutocompleteProvider`
 
-- 依赖：T7.1
-- 文件：`extensions/input/autocomplete.ts`
-- 步骤：
-  1. 会话/子代理候选。
-  2. 插入后光标位置正确。
-- 完成：不重复插入；取消不改变文本。
-- 验证：三次插入/取消。
+### T7.2 `@` 引用（不做）
 
-### T7.3 编辑器内容
+- 原文件：`extensions/input/autocomplete.ts`
 
-- 依赖：T2.2
-- 文件：`extensions/ui/editor.ts`
-- API：`setEditorText`、`getEditorText`、`pasteToEditor`
-- 步骤：
-  1. 提供预填/读取/粘贴入口。
-  2. 大粘贴走 pi 的折叠处理。
-- 完成：粘贴 50 行后显示折叠标记。
-- 验证：手动。
+### T7.3 编辑器内容（不做）
+
+- 原 API：`ctx.ui.setEditorText`、`getEditorText`、`pasteToEditor`
 
 ---
 
-## M8 自定义消息与条目
+## M8 自定义消息与条目（不做）
 
-### T8.1 自定义消息渲染
+> 结论：全部不做。两个 API 只对**本扩展自己创建的内容**生效：
+> - `registerMessageRenderer(customType, …)` —— 需要先用 `pi.sendMessage` 发带该 `customType` 的消息。
+> - `registerEntryRenderer(customType, …)` —— 需要先用 `pi.appendEntry` 写带该 `customType` 的条目。
+> 本包不发消息、不写条目，注册后就是永远不执行的死代码。
 
-- 依赖：T1.5
-- 文件：`extensions/transcript/messages.ts`
-- API：`pi.registerMessageRenderer`
-- 步骤：
-  1. 定义 `customType`。
-  2. 渲染标题、正文、展开详情。
-- 完成：只匹配自己的类型；内置消息不变。
-- 验证：快照 + 手动。
+### T8.1 自定义消息渲染（不做）
 
-### T8.2 自定义条目渲染
+- 原文件：`extensions/transcript/messages.ts`
+- 原 API：`pi.registerMessageRenderer`
 
-- 依赖：T8.1
-- 文件：`extensions/transcript/entries.ts`
-- API：`pi.registerEntryRenderer`、`pi.appendEntry`
-- 步骤：
-  1. 渲染摘要条目。
-  2. 不进入 LLM 上下文。
-- 完成：不重复、不丢条目。
-- 验证：连续追加 3 条。
+### T8.2 自定义条目渲染（不做）
+
+- 原文件：`extensions/transcript/entries.ts`
+- 原 API：`pi.registerEntryRenderer`、`pi.appendEntry`
 
 ---
 
-## M9 原始输入与鼠标（可选）
+## M9 原始输入与鼠标（不做）
 
-### T9.1 开关与空实现
+> 结论：整块不做。pi 已经把这件事做完了：
+> - 每个 tool renderer 都被 `MouseRegion` 包住，**点击即展开/收起**（`tool-execution.js` 的 `createResultRegion`）。
+> - fullscreen 已有 `fullscreenScrollbar`、`fullscreenWheelScrollLines`、`fullscreenCopyOnSelect`。
+> - 回底已有 `tui.altScreen.bottom`（“Scroll viewport to bottom”）。
+> - `onTerminalInput` 原始 SGR 解析在 TODO 里本来就写着“仅必要时”，现在不需要。
 
-- 依赖：T6.1
-- 文件：`extensions/input/mouse.ts`
-- API：`ctx.ui.onTerminalInput`
-- 步骤：
-  1. 默认关闭。
-  2. 开启后只记录，不消费。
-- 完成：关闭时零影响。
-- 验证：开关两次。
+### T9.1 开关与空实现（不做）
 
-### T9.2 组件级鼠标
+- 原文件：`extensions/input/mouse.ts`
 
-- 依赖：T9.1、T5.1
-- 文件：`extensions/transcript/tool-card.ts`
-- API：`Component.handleMouse`、`MouseRegion`
-- 步骤：
-  1. 先做 hover/点击展开。
-  2. 只在 fullscreen 生效。
-- 完成：regular 模式仍可键盘操作。
-- 验证：两种模式各一次。
+### T9.2 组件级鼠标（不做）
 
-### T9.3 回底按钮
+- 原 API：`Component.handleMouse`、`MouseRegion`
+- 现状：pi 自动包裹，已生效。
 
-- 依赖：T3.1、T9.2
-- 文件：`extensions/ui/widgets.ts`
-- API：`setWidget`
-- 步骤：
-  1. 滚离底部时显示，点击回底。
-  2. 与 footer/widget 不重叠。
-- 完成：窄屏隐藏；点击后消失。
-- 验证：长 transcript。
+### T9.3 回底按钮（不做）
 
-### T9.4 原始 SGR 兜底（仅必要时）
+- 原文件：`extensions/ui/widgets.ts`
+- 现状：键位与滚动条已覆盖。
 
-- 依赖：T9.2
-- 文件：`extensions/input/mouse.ts`
-- API：`onTerminalInput`
-- 步骤：
-  1. 只在组件级鼠标无法满足时启用。
-  2. 解析按下/释放/拖拽/滚轮。
-  3. 退出时取消订阅。
-- 完成：不吞普通按键；关闭后无监听。
-- 验证：终端矩阵（Windows Terminal / iTerm2 / Ghostty）。
+### T9.4 原始 SGR 兜底（不做）
+
+- 原 API：`onTerminalInput`
 
 ---
 
@@ -650,38 +615,50 @@ tests/
 
 ### X1 宽度安全巡检
 
-- 依赖：M5、M6 完成
-- 步骤：对每个组件跑 40/60/80/120/160 快照。
-- 完成：无一行超宽。
-- 验证：`node --test tests/`。
+> 状态：已完成（分散在现有测试里，不单独建矩阵）。
+
+| 组件 | 覆盖宽度 | 测试 |
+| --- | --- | --- |
+| footer | 30 / 40 / 120 | `tests/footer.test.ts` |
+| header | 40 / 64 / 120 | `tests/header.test.ts` |
+| tool cards | 40 / 60 / 80 / 120 / 160 | `tests/tool-card.test.ts` |
+| diff | 20 / 40 / 80 / 120 / 160 | `tests/tool-card.test.ts` |
+| config panel | 40 / 60 / 80 / 120 | `tests/config-panel.test.ts` |
+| markdown | 8 / 20 / 40 / 80 | `tests/markdown.test.ts` |
+| editor / working / whale / bigfont | 对应专测 | `tests/*.test.ts` |
+
+- 完成：每个组件的每个宽度都有 `assertWidth`，无一行超宽。
+- 验证：`npm test`。
 
 ### X2 主题失效巡检
 
-- 依赖：M2 完成
-- 步骤：切换 light/dark，检查所有缓存组件重建。
-- 完成：无旧颜色残留。
-- 验证：手动切换 3 次。
+> 状态：已完成（手动清单）。
+
+- 实现保证：header/footer 工厂接收 `() => ctx.ui.theme`，每次渲染读当前主题；编辑器等组件由 pi 在主题切换时重建。
+- 验证：`tests/manual.md` 的 Footer / Header 小节均有“切换 dsh-dark / dsh-light，无旧颜色残留”。
 
 ### X3 焦点与 IME 巡检
 
-- 依赖：M6、M7 完成
-- 步骤：在 editor、问卷、设置、picker 中输入中文。
-- 完成：候选窗位置正确；Esc 不误触。
-- 验证：手动。
+> 状态：已完成（手动清单）。
+
+- 覆盖：editor 中文输入与候选窗、`/ds-config` 搜索框、Esc 不误触、关闭后焦点回 editor。
+- 验证：`tests/manual.md` 的 M2 Editor 与 M6 小节。
 
 ### X4 开关矩阵
 
-- 依赖：全部功能
-- 步骤：逐项关闭，确认无残留。
-- 完成：任意组合下都能启动。
-- 验证：`pi -e .` × 组合。
+> 状态：已完成（`tests/switch-matrix.test.ts`，11 个用例）。
+
+- 做法：每个用例建一个临时 HOME，写入对应配置，用 `?matrix=N` 打破 ESM 缓存重新加载扩展；然后断言命令、事件监听、transformer、renderer 与 UI 调用。
+- 覆盖：全部开关、单项关闭、`enabled: false`、全关、意外监听器、状态写入。
+- 验证：`node --test tests/switch-matrix.test.ts`。
 
 ### X5 文档同步
 
-- 依赖：全部功能
-- 步骤：更新本文件勾选状态、配置说明、手动冒烟清单。
-- 完成：文档与实现一致。
-- 验证：对照检查。
+> 状态：已完成（`scripts/check-docs.mjs`，已接入 `npm run verify`）。
+
+- 检查：README 命令表 ↔ 实际注册；README 目录树 ↔ 磁盘（`extensions/` 双向）；配置示例 ↔ `DEFAULT_CONFIG`；相对链接；已删除特性的残留字符串。
+- TODO 不参与残留检查（它记录历史）。
+- 验证：`npm run check:docs`。
 
 ---
 

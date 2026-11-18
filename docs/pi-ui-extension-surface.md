@@ -319,12 +319,13 @@
 | 1 | 薄切片：Footer + 一个简单工具卡 | 0 | 端到端可跑的最小闭环 | 三种状态正常；Esc/Enter 不抢键 |
 | 2 | Chrome 补全：Header + Editor 外观 + Working row | 1 | 顶部/底部完整 | 输入、IME、粘贴、应用快捷键不回归 |
 | 3 | Widget above / below（已移除；todo 由 rpiv-todo 提供） | 2 | — | 不再注册 editor widget |
-| 4 | Markdown transformer | 1 | mermaid、公式、标签清理 | 表格/公式/mermaid 正常；不重复渲染 |
+| 4 | Markdown transformer | 1 | 方言 mermaid | 表格/公式/mermaid 正常；不重复渲染 |
 | 5 | 工具卡铺开：call/result、展开、diff、长输出 | 1、4 | dsh 风格工具卡 | partial、长输出、窄宽度、无 ANSI 溢出 |
 | 6 | 内联面板：只做设置面板（问卷由 rpiv-ask-user-question、picker 由 pi 内置提供） | 1、5 | 自己的配置可视化 | 焦点、键盘、Esc、窄屏 |
-| 7 | Autocomplete + 编辑器内容 | 2 | `@` 提及、命令补全 | 不抢内置 `/` 与文件补全 |
-| 8 | 自定义消息 / 条目 | 1 | 状态、摘要、通知条目 | 只匹配自己的 `customType` |
-| 9 | 原始输入 / 鼠标（可选） | 2、6 | hover、点击、滚动 | regular + fullscreen；鼠标关闭仍可键盘操作 |
+| 7 | Autocomplete + 编辑器内容（不做：pi 与 `@ff-labs/pi-fff` 已覆盖） | 2 | — | — |
+| 8 | 自定义消息 / 条目（不做：本包不产生这类内容） | 1 | — | — |
+| 9 | 原始输入 / 鼠标（不做：pi 已提供 MouseRegion 与滚动能力） | 2、6 | — | — |
+| X | 开关矩阵 + 文档门禁 | 全部 | 回归保障 | `switch-matrix` 与 `check:docs` 绿 |
 
 逐任务的可执行清单见 [pi-ui-extension-todo.md](pi-ui-extension-todo.md)。
 

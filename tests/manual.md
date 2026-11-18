@@ -122,7 +122,7 @@
 
 ## M3 Widgets（已移除）
 
-- 目标/todo 面板与 `/ds-widgets` 已移除；使用 `@juicesharp/rpiv-todo`。
+- 目标/todo 面板及其折叠命令已移除；使用 `@juicesharp/rpiv-todo`。
 - pi-ds-tui 不再注册 editor widget，也不读写 `widgets` 配置。
 
 ## M4 Markdown
