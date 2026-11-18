@@ -8,6 +8,8 @@
 
 type Rgb = readonly [number, number, number]
 
+import { hexFg } from './theme.ts'
+
 const PALETTE: Record<string, Rgb | undefined> = {
   D: [20, 38, 96],
   B: [78, 111, 255],
@@ -51,10 +53,8 @@ const SPRITE = [
 export const WHALE_WIDTH = 40
 export const WHALE_ROWS = Math.ceil(SPRITE.length / 2)
 
-/** DeepSeek body blue, used for the header wordmark so it matches the whale. */
-export function whaleBlue(text: string): string {
-  return `\x1b[38;2;78;111;255m${text}\x1b[39m`
-}
+/** DeepSeek body blue (`#4E6FFF`), used wherever the whale colour is wanted. */
+export const whaleBlue = hexFg('#4E6FFF')
 
 function fg(rgb: Rgb): string {
   return `\x1b[38;2;${rgb[0]};${rgb[1]};${rgb[2]}m`

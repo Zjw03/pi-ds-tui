@@ -11,6 +11,12 @@ import type { Theme } from '@earendil-works/pi-coding-agent'
 import type { FooterConfig } from '../config.ts'
 import { fitLine, padRight, sanitizeSingleLine, truncateMiddle, visibleWidth } from './text.ts'
 import { whaleBlue } from './whale.ts'
+import { hexFg } from './theme.ts'
+
+/** Footer accents, matched to the dsh blue ramp rather than theme tokens. */
+const cwdColor = hexFg('#4EA8DE')
+const branchColor = hexFg('#BCE0FD')
+const readoutColor = hexFg('#A9D6E5')
 
 export interface FooterSnapshot {
   readonly cwd: string
@@ -123,15 +129,6 @@ export const BAR_TRACK = '\u2591'
 /** Branch marker shown before the git branch name (`dsh-tui` uses the same). */
 export const BRANCH_GLYPH = '\u2387'
 
-type ColorToken = string
-
-function pressureToken(percent: number | null): ColorToken {
-  if (percent === null) return 'dim'
-  if (percent >= 95) return 'error'
-  if (percent >= 80) return 'warning'
-  return 'dim'
-}
-
 function fillCells(text: string, percent: number, theme: FooterTheme): string {
   if (percent >= 95) return theme.fg('error', text)
   if (percent >= 80) return theme.fg('warning', text)
@@ -160,7 +157,12 @@ export function renderContextBar(
   if (width < 8) return ''
   const percent = snapshot.contextPercent
   const clamped = percent === null ? 0 : Math.min(100, Math.max(0, percent))
-  const readout = theme.fg(pressureToken(percent), barReadout(snapshot))
+  const readoutText = barReadout(snapshot)
+  const readout = percent !== null && percent >= 95
+    ? theme.fg('error', readoutText)
+    : percent !== null && percent >= 80
+      ? theme.fg('warning', readoutText)
+      : readoutColor(readoutText)
   const textWidth = Math.min(width, visibleWidth(readout))
   const trackWidth = width - textWidth - 1
   if (trackWidth <= 0) return fitLine(readout, width)
@@ -187,13 +189,13 @@ function layoutStatusLine(
   const compose = (): { left: string; right: string } => {
     const right = modelLabel(snapshot, theme, keepThinking)
     const branch = keepBranch
-      ? theme.fg('muted', `${BRANCH_GLYPH} ${snapshot.gitBranch ?? ''}`)
+      ? branchColor(`${BRANCH_GLYPH} ${snapshot.gitBranch ?? ''}`)
       : ''
     const reserved =
       (visibleWidth(branch) > 0 ? visibleWidth(branch) + 2 : 0) +
       (right.length > 0 ? visibleWidth(right) + 2 : 0)
     const cwd = showCwd
-      ? theme.fg('dim', truncateMiddle(snapshot.cwd, Math.max(4, width - reserved)))
+      ? cwdColor(truncateMiddle(snapshot.cwd, Math.max(4, width - reserved)))
       : ''
     return { left: [cwd, branch].filter((part) => part.length > 0).join('  '), right }
   }
