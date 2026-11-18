@@ -21,10 +21,7 @@ export interface FooterSnapshot {
   readonly thinking: string | null
   readonly contextPercent: number | null
   readonly contextWindow: number
-  readonly totalTokens: number
-  readonly cacheTokens: number
   readonly cacheHitPercent: number | null
-  readonly cost: number
   readonly gitBranch: string | null
   readonly statuses: readonly string[]
 }
@@ -41,10 +38,8 @@ export interface FooterDataLike {
 
 interface UsageLike {
   readonly input?: number
-  readonly totalTokens?: number
   readonly cacheRead?: number
   readonly cacheWrite?: number
-  readonly cost?: { readonly total?: number }
 }
 
 interface EntryLike {
@@ -68,13 +63,8 @@ export interface FooterContextLike {
 
 export interface FooterStatsCache {
   entryCount: number
-  totalTokens: number
-  cacheTokens: number
   cacheHitPercent: number | null
-  cost: number
 }
-
-const DROP_ORDER = ['cost', 'cache', 'tokens'] as const
 
 export function snapshotFooter(
   ctx: FooterContextLike,
@@ -82,7 +72,7 @@ export function snapshotFooter(
   cache?: FooterStatsCache,
 ): FooterSnapshot {
   const usage = ctx.getContextUsage?.()
-  const stats = readStats(ctx.sessionManager, cache)
+  const cacheHitPercent = readCacheHitPercent(ctx.sessionManager, cache)
   const statuses = [...data.getExtensionStatuses().values()]
     .map((text) => sanitizeSingleLine(text))
     .filter((text) => text.length > 0)
@@ -93,10 +83,7 @@ export function snapshotFooter(
     thinking: ctx.thinkingLevel ?? null,
     contextPercent: usage?.percent ?? null,
     contextWindow: usage?.contextWindow ?? 0,
-    totalTokens: stats.totalTokens,
-    cacheTokens: stats.cacheTokens,
-    cacheHitPercent: stats.cacheHitPercent,
-    cost: stats.cost,
+    cacheHitPercent,
     gitBranch: data.getGitBranch(),
     statuses,
   }
@@ -188,7 +175,6 @@ function layoutStatusLine(
   theme: FooterTheme,
 ): string {
   const showCwd = config.chips.includes('cwd')
-  const chips = buildChips(snapshot, config.chips)
   let keepBranch =
     config.chips.includes('git') &&
     snapshot.gitBranch !== null &&
@@ -197,42 +183,29 @@ function layoutStatusLine(
 
   const compose = (): { left: string; right: string } => {
     const right = modelLabel(snapshot, theme, keepThinking)
-    const chipText = joinChips(chips, theme, snapshot)
     const branch = keepBranch
       ? theme.fg('muted', `${BRANCH_GLYPH} ${snapshot.gitBranch ?? ''}`)
       : ''
     const reserved =
       (visibleWidth(branch) > 0 ? visibleWidth(branch) + 2 : 0) +
-      (chipText.length > 0 ? visibleWidth(chipText) + 2 : 0) +
       (right.length > 0 ? visibleWidth(right) + 2 : 0)
     const cwd = showCwd
       ? theme.fg('dim', truncateMiddle(snapshot.cwd, Math.max(4, width - reserved)))
       : ''
-    return { left: [cwd, branch, chipText].filter((part) => part.length > 0).join('  '), right }
+    return { left: [cwd, branch].filter((part) => part.length > 0).join('  '), right }
   }
 
   let view = compose()
   const overflow = (): boolean =>
     visibleWidth(view.left) + (view.right.length > 0 ? visibleWidth(view.right) + 2 : 0) > width
 
-  while (overflow()) {
-    const index = dropIndex(chips)
-    if (index >= 0) {
-      chips.splice(index, 1)
-      view = compose()
-      continue
-    }
-    if (keepBranch) {
-      keepBranch = false
-      view = compose()
-      continue
-    }
-    if (keepThinking) {
-      keepThinking = false
-      view = compose()
-      continue
-    }
-    break
+  if (overflow() && keepBranch) {
+    keepBranch = false
+    view = compose()
+  }
+  if (overflow() && keepThinking) {
+    keepThinking = false
+    view = compose()
   }
 
   const rightWidth = visibleWidth(view.right)
@@ -253,48 +226,6 @@ export function formatTokens(count: number): string {
   return `${Math.round(count / 1_000_000)}M`
 }
 
-export function formatCost(cost: number): string {
-  if (!Number.isFinite(cost) || cost <= 0) return '$0'
-  return `$${cost.toFixed(cost < 1 ? 4 : 2)}`
-}
-
-interface Chip {
-  readonly key: string
-  readonly text: string
-}
-
-function buildChips(snapshot: FooterSnapshot, order: readonly string[]): Chip[] {
-  const chips: Chip[] = []
-  for (const key of order) {
-    // `cwd`, `model`, `context`, `git` and `effort` render elsewhere.
-    if (
-      key === 'model' ||
-      key === 'cwd' ||
-      key === 'context' ||
-      key === 'git' ||
-      key === 'effort'
-    ) {
-      continue
-    }
-    const text = chipText(key, snapshot)
-    if (text !== null) chips.push({ key, text })
-  }
-  return chips
-}
-
-function chipText(key: string, snapshot: FooterSnapshot): string | null {
-  switch (key) {
-    case 'tokens':
-      return `\u03a3 ${formatTokens(snapshot.totalTokens)}`
-    case 'cache':
-      return snapshot.cacheTokens > 0 ? `cache ${formatTokens(snapshot.cacheTokens)}` : null
-    case 'cost':
-      return snapshot.cost > 0 ? formatCost(snapshot.cost) : null
-    default:
-      return null
-  }
-}
-
 function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme, includeThinking: boolean): string {
   const model = snapshot.model ?? 'no-model'
   const label = theme.fg('accent', model)
@@ -302,81 +233,34 @@ function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme, includeThinkin
   return `${label}${theme.fg('dim', ` \u00b7 ${snapshot.thinking}`)}`
 }
 
-function joinChips(chips: readonly Chip[], theme: FooterTheme, _snapshot: FooterSnapshot): string {
-  return chips.map((chip) => theme.fg('muted', chip.text)).join(' ')
-}
-
-
-function dropIndex(chips: readonly Chip[]): number {
-  for (const key of DROP_ORDER) {
-    const index = chips.findIndex((chip) => chip.key === key)
-    if (index >= 0) return index
-  }
-  return -1
-}
-
-interface StatsTotals {
-  totalTokens: number
-  cacheTokens: number
-  cacheHitPercent: number | null
-  cost: number
-}
-
-function entryUsage(raw: EntryLike): UsageLike | undefined {
-  if (raw.type === 'usage') return raw.usage
-  if (raw.type === 'message') {
-    return raw.message?.role === 'assistant' ? raw.message.usage : undefined
-  }
-  if (raw.type === 'compaction' || raw.type === 'branch_summary') return raw.usage
-  return undefined
-}
-
-function readStats(
+/**
+ * Cache-hit rate of the most recent assistant turn: cache reads over the whole
+ * prompt (fresh input + cache read + cache write). Cached by entry count.
+ */
+function readCacheHitPercent(
   session: FooterSessionLike | undefined,
   cache: FooterStatsCache | undefined,
-): StatsTotals {
-  if (!session) return { totalTokens: 0, cacheTokens: 0, cacheHitPercent: null, cost: 0 }
+): number | null {
+  if (!session) return null
 
   const entries = session.getEntries()
   const entryCount = session.getEntryCount?.() ?? entries.length
-  if (cache !== undefined && cache.entryCount === entryCount) {
-    return {
-      totalTokens: cache.totalTokens,
-      cacheTokens: cache.cacheTokens,
-      cacheHitPercent: cache.cacheHitPercent,
-      cost: cache.cost,
-    }
-  }
+  if (cache !== undefined && cache.entryCount === entryCount) return cache.cacheHitPercent
 
-  let totalTokens = 0
-  let cacheTokens = 0
-  let cacheHitPercent: number | null = null
-  let cost = 0
+  let percent: number | null = null
   for (const raw of entries) {
-    if (!isEntry(raw)) continue
-    const usage = entryUsage(raw)
+    if (!isEntry(raw) || raw.type !== 'message' || raw.message?.role !== 'assistant') continue
+    const usage = raw.message.usage
     if (usage === undefined) continue
-
-    totalTokens += usage.totalTokens ?? 0
-    cacheTokens += (usage.cacheRead ?? 0) + (usage.cacheWrite ?? 0)
-    cost += usage.cost?.total ?? 0
-
-    // Cache hit rate of the most recent assistant turn: cache reads over the
-    // whole prompt (fresh input + cache read + cache write).
-    if (raw.type === 'message' && raw.message?.role === 'assistant') {
-      const prompt = (usage.input ?? 0) + (usage.cacheRead ?? 0) + (usage.cacheWrite ?? 0)
-      cacheHitPercent = prompt > 0 ? ((usage.cacheRead ?? 0) / prompt) * 100 : 0
-    }
+    const prompt = (usage.input ?? 0) + (usage.cacheRead ?? 0) + (usage.cacheWrite ?? 0)
+    percent = prompt > 0 ? ((usage.cacheRead ?? 0) / prompt) * 100 : 0
   }
 
   if (cache !== undefined) {
     cache.entryCount = entryCount
-    cache.totalTokens = totalTokens
-    cache.cacheTokens = cacheTokens
-    cache.cacheHitPercent = cacheHitPercent
-    cache.cost = cost
+    cache.cacheHitPercent = percent
   }
-  return { totalTokens, cacheTokens, cacheHitPercent, cost }
+  return percent
 }
 
 function isEntry(value: unknown): value is EntryLike {
@@ -411,10 +295,7 @@ export function createFooterFactory(
 ): DshFooter {
   const cache: FooterStatsCache = {
     entryCount: -1,
-    totalTokens: 0,
-    cacheTokens: 0,
     cacheHitPercent: null,
-    cost: 0,
   }
   return new DshFooter(() => snapshotFooter(ctx, data, cache), config, theme)
 }

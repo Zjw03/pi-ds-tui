@@ -32,7 +32,7 @@ Run `/ds-config` to edit it in place. It opens in the editor area like `/setting
   "enabled": true,
   "footer": {
     "enabled": true,
-    "chips": ["model", "context", "tokens", "cache", "cost", "git", "effort", "cwd"],
+    "chips": ["model", "context", "git", "effort", "cwd"],
     "narrowWidth": 60
   },
   "header": { "enabled": true, "logo": true },
@@ -53,7 +53,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 
 | Feature | Entry | Config switch |
 | --- | --- | --- |
-| dsh-style footer: cwd, branch and chips with model on the right, then a full-width context bar (`42% · 128k · CH 87%`) | automatic | `footer.enabled` |
+| dsh-style footer: cwd and branch with model on the right, then a full-width context bar (`42% · 128k · CH 87%`) | automatic | `footer.enabled` |
 | Header: DeepSeek whale + `DEEPSEEK`/`PI` block wordmark + model/effort + cwd + tip + tagline | automatic | `header.enabled` / `header.logo` |
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
@@ -67,7 +67,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 The footer has two rows (plus one for extension statuses):
 
 ```text
-~/projects/pi-ds-tui  ⎇ main  Σ 35k  cache 28k  $0.04        deepseek-flash · high
+~/projects/pi-ds-tui  ⎇ main                          deepseek-flash · high
 ███████████████████░░░░░░░░░░░░░░░░░░░░░░░ 42% · 128k · CH 87%
 ```
 
@@ -76,7 +76,7 @@ The footer has two rows (plus one for extension statuses):
 - The bar is one meter: `█` fill and `░` track spanning the terminal, readout right-aligned in the track. Fill and readout turn `warning` from 80% and `error` from 95%.
 - `CH` is the cache-hit rate of the most recent assistant turn (cache reads over the whole prompt).
 
-On narrow terminals the first row drops chips in this order: cost → cache → tokens, then the branch, then the thinking level. The cwd, model and bar stay.
+On narrow terminals the first row drops the branch, then the thinking level; the cwd and model stay.
 
 A collapsed `read` row shows only its header, and a collapsed shell row keeps its last five lines, matching pi's own density. `ctrl+o` expands every tool result; there is no separate command.
 
