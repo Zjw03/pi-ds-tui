@@ -51,14 +51,14 @@ export default function piDsTui(pi: ExtensionAPI): void {
   if (config.footer.enabled) {
     pi.on('session_start', (_event, ctx) => {
       ctx.ui.setFooter((_tui, theme, footerData) =>
-        createFooterFactory(ctx, footerData, config.footer, theme),
+        createFooterFactory(ctx, footerData, config.footer, () => ctx.ui.theme ?? theme),
       )
     })
   }
 
   if (config.header.enabled) {
     pi.on('session_start', (_event, ctx) => {
-      ctx.ui.setHeader(createHeaderFactory(HEADER_INFO))
+      ctx.ui.setHeader(createHeaderFactory(HEADER_INFO, () => ctx.ui.theme))
     })
   }
 

@@ -316,16 +316,17 @@ function isEntry(value: unknown): value is EntryLike {
 export class DshFooter implements Component {
   readonly #read: () => FooterSnapshot
   readonly #config: FooterConfig
-  readonly #theme: Theme
+  readonly #theme: Theme | (() => Theme)
 
-  constructor(read: () => FooterSnapshot, config: FooterConfig, theme: Theme) {
+  constructor(read: () => FooterSnapshot, config: FooterConfig, theme: Theme | (() => Theme)) {
     this.#read = read
     this.#config = config
     this.#theme = theme
   }
 
   render(width: number): string[] {
-    return renderFooter(this.#read(), width, this.#config, this.#theme)
+    const theme = typeof this.#theme === 'function' ? this.#theme() : this.#theme
+    return renderFooter(this.#read(), width, this.#config, theme)
   }
 
   invalidate(): void {}
@@ -336,7 +337,7 @@ export function createFooterFactory(
   ctx: FooterContextLike,
   data: FooterDataLike,
   config: FooterConfig,
-  theme: Theme,
+  theme: Theme | (() => Theme),
 ): DshFooter {
   const cache: FooterStatsCache = { entryCount: -1, totalTokens: 0, cacheTokens: 0, cost: 0 }
   return new DshFooter(() => snapshotFooter(ctx, data, cache), config, theme)

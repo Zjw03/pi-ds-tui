@@ -29,20 +29,27 @@ export function renderHeader(info: HeaderInfo, width: number, theme: HeaderTheme
 
 export class DshHeader implements Component {
   readonly #info: HeaderInfo
-  readonly #theme: Theme
+  readonly #theme: Theme | (() => Theme)
 
-  constructor(info: HeaderInfo, theme: Theme) {
+  constructor(info: HeaderInfo, theme: Theme | (() => Theme)) {
     this.#info = info
     this.#theme = theme
   }
 
   render(width: number): string[] {
-    return renderHeader(this.#info, width, this.#theme)
+    return renderHeader(this.#info, width, this.#currentTheme())
   }
 
   invalidate(): void {}
+
+  #currentTheme(): Theme {
+    return typeof this.#theme === 'function' ? this.#theme() : this.#theme
+  }
 }
 
-export function createHeaderFactory(info: HeaderInfo): (tui: TUI, theme: Theme) => DshHeader {
-  return (_tui: TUI, theme: Theme) => new DshHeader(info, theme)
+export function createHeaderFactory(
+  info: HeaderInfo,
+  getTheme?: () => Theme,
+): (tui: TUI, theme: Theme) => DshHeader {
+  return (_tui: TUI, theme: Theme) => new DshHeader(info, getTheme ?? (() => theme))
 }
