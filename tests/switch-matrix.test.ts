@@ -30,6 +30,7 @@ interface Registrations {
 
 interface Harness {
   readonly registrations: Registrations
+  readonly statusWrites: number
   readonly status: (key: string) => string | undefined
 }
 
@@ -58,6 +59,7 @@ async function loadExtension(config: Config | null): Promise<Harness> {
   let toolRenderers = 0
   const ui = { footer: 0, header: 0, editor: 0, working: 0 }
   const statuses = new Map<string, string>()
+  let statusWrites = 0
 
   const uiContext = {
     theme: { fg: (_color: string, text: string) => text, bold: (text: string) => text },
@@ -77,6 +79,7 @@ async function loadExtension(config: Config | null): Promise<Harness> {
     setWorkingIndicator: () => {},
     setWorkingVisible: () => {},
     setStatus: (key: string, text: string | undefined) => {
+      statusWrites++
       if (text === undefined) statuses.delete(key)
       else statuses.set(key, text)
     },
@@ -125,6 +128,7 @@ async function loadExtension(config: Config | null): Promise<Harness> {
       toolRenderers,
       ui,
     },
+    statusWrites,
     status: (key) => statuses.get(key),
   }
 }
@@ -157,6 +161,12 @@ const DEFAULT_EVENTS = {
   resources_discover: 1,
   model_select: 1,
   thinking_level_select: 1,
+  agent_start: 1,
+  turn_start: 1,
+  message_update: 1,
+  message_end: 1,
+  agent_end: 1,
+  session_shutdown: 1,
 }
 
 test('all switches on registers everything once', async () => {
@@ -230,7 +240,7 @@ test('editor switch removes only the editor factory', async () => {
   assert.equal(registrations.events.session_start, 3)
 })
 
-test('working switch removes only the working row', async () => {
+test('working switch removes the row and its run listeners', async () => {
   const { registrations } = await loadExtension(withSwitch(['working']))
 
   assert.equal(registrations.ui.working, 0)
@@ -238,6 +248,9 @@ test('working switch removes only the working row', async () => {
   assert.equal(registrations.ui.header, 1)
   assert.equal(registrations.ui.editor, 1)
   assert.equal(registrations.events.session_start, 3)
+  assert.equal(registrations.events.agent_start, undefined)
+  assert.equal(registrations.events.message_update, undefined)
+  assert.equal(registrations.events.agent_end, undefined)
 })
 
 test('markdown switch removes the transformer and nothing else', async () => {
@@ -265,8 +278,8 @@ test('no unrelated event listeners are registered', async () => {
 })
 
 test('the extension never writes extension statuses', async () => {
-  const { registrations, status } = await loadExtension(allOn())
-  assert.equal(registrations.events.agent_start, undefined)
-  assert.equal(registrations.events.agent_settled, undefined)
+  const { registrations, statusWrites, status } = await loadExtension(allOn())
+  assert.equal(registrations.events.session_start, 4)
+  assert.equal(statusWrites, 0)
   assert.equal(status('pi-ds-tui'), undefined)
 })

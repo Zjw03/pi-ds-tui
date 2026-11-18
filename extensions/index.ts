@@ -15,7 +15,7 @@ import { installEditor } from './ui/editor.ts'
 import { createFooterFactory } from './ui/footer.ts'
 import { createHeaderFactory, DEFAULT_TAGLINE, pickHeaderTip, type HeaderInfo } from './ui/header.ts'
 import { VERSION } from './version.ts'
-import { applyWorking } from './ui/working.ts'
+import { applyWorking, installWorkingTracker } from './ui/working.ts'
 
 const loaded = loadConfig()
 const config = loaded.config
@@ -122,12 +122,13 @@ export default function piDsTui(pi: ExtensionAPI): void {
 
   if (config.editor.enabled) {
     pi.on('session_start', (_event, ctx) => {
-      installEditor(ctx.ui, config.editor.prefix)
+      installEditor(ctx.ui, config.editor.prefix, config.working.enabled)
     })
   }
 
   if (config.working.enabled) {
     pi.on('session_start', (_event, ctx) => applyWorking(ctx.ui, config.working))
+    installWorkingTracker(pi, config.working)
   }
 
   if (config.markdown.enabled) {
