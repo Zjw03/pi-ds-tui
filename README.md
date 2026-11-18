@@ -72,7 +72,7 @@ The footer has two rows (plus one for extension statuses):
 ```
 
 - The branch follows the cwd, behind `⎇`, and only appears when the repository has one.
-- `model · thinking` is right-aligned on that same row, above the bar.
+- `model · thinking` is right-aligned on that same row, above the bar. The model uses the whale blue; the thinking label uses the theme's `thinking<Level>` token, the same colour pi gives the editor border for that effort.
 - Every footer row keeps a one-column margin on both sides, so it lines up with extension widgets and status rows above it and the bar never touches the terminal edge.
 - The bar is one meter: `█` fill and `░` track spanning the terminal, readout right-aligned in the track. The fill and the model name use the header's whale blue (`#4E6FFF`); both the fill and the readout turn `warning` from 80% and `error` from 95%.
 - `CH` is the cache-hit rate of the most recent assistant turn (cache reads over the whole prompt).

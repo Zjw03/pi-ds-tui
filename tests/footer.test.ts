@@ -61,6 +61,29 @@ test('the branch icon is omitted when there is no branch', () => {
   assert.ok(!lines[0]?.includes('\u2387'))
 })
 
+test('the thinking label uses the effort colour token', () => {
+  const calls: { color: string; text: string }[] = []
+  const spy = {
+    fg: (color: string, text: string) => {
+      calls.push({ color, text })
+      return text
+    },
+    bold: (text: string) => text,
+    dim: (text: string) => text,
+  }
+
+  renderFooter({ ...snapshot, thinking: 'low' }, 120, DEFAULT_CONFIG.footer, spy)
+  assert.ok(calls.some((call) => call.color === 'thinkingLow' && call.text.includes('low')))
+
+  calls.length = 0
+  renderFooter({ ...snapshot, thinking: 'high' }, 120, DEFAULT_CONFIG.footer, spy)
+  assert.ok(calls.some((call) => call.color === 'thinkingHigh'))
+
+  calls.length = 0
+  renderFooter({ ...snapshot, thinking: 'unknown' }, 120, DEFAULT_CONFIG.footer, spy)
+  assert.ok(calls.some((call) => call.color === 'dim' && call.text.includes('unknown')))
+})
+
 test('thinking is dropped when `effort` is not selected', () => {
   const lines = renderFooter(
     snapshot,

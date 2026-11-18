@@ -229,11 +229,26 @@ export function formatTokens(count: number): string {
   return `${Math.round(count / 1_000_000)}M`
 }
 
+/** Thinking-level token, the same one pi uses for the editor border. */
+const THINKING_TOKENS: Readonly<Record<string, string>> = {
+  off: 'thinkingOff',
+  minimal: 'thinkingMinimal',
+  low: 'thinkingLow',
+  medium: 'thinkingMedium',
+  high: 'thinkingHigh',
+  xhigh: 'thinkingXhigh',
+  max: 'thinkingMax',
+}
+
+export function thinkingToken(level: string): string {
+  return THINKING_TOKENS[level] ?? 'dim'
+}
+
 function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme, includeThinking: boolean): string {
   const model = snapshot.model ?? 'no-model'
   const label = whaleBlue(model)
   if (!includeThinking || snapshot.thinking === null || snapshot.thinking.length === 0) return label
-  return `${label}${theme.fg('dim', ` \u00b7 ${snapshot.thinking}`)}`
+  return `${label}${theme.fg(thinkingToken(snapshot.thinking), ` \u00b7 ${snapshot.thinking}`)}`
 }
 
 /**
