@@ -13,8 +13,11 @@ pi install git:github.com/Zjw03/pi-ds-tui
 For one-off development runs:
 
 ```bash
+cd /path/to/pi-ds-tui
 pi -e .
 ```
+
+Pick `dsh-dark` or `dsh-light` in `/settings` → Theme. `/ds-ui` prints the resolved config path, every switch and any warnings; settings are re-read on `/reload`.
 
 The package is `private` while the UI is under construction. Remove `"private": true` from `package.json` before publishing.
 
@@ -91,7 +94,23 @@ npm run typecheck
 npm test
 npm run check:public-api
 npm run check:themes
+npm run preview:markdown   # render tests/fixtures/markdown-demo.md at 40/60/80/120 columns
 ```
+
+To try the extension without installing it:
+
+```bash
+cd /path/to/pi-ds-tui
+pi -e .
+```
+
+`-e` follows package discovery, so `pi.extensions` and `pi.themes` in `package.json` both load. To keep it loaded in every session, install the local checkout:
+
+```bash
+pi install /path/to/pi-ds-tui     # or pi install git:github.com/Zjw03/pi-ds-tui
+```
+
+The config file is read from `~/.pi/agent/pi-ds-tui.json`; `/ds-ui` prints the resolved path and any warnings. Settings are re-read on `/reload`.
 
 Manual smoke tests are in [tests/manual.md](tests/manual.md).
 

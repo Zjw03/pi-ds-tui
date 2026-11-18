@@ -4,6 +4,13 @@
 >
 > 权限审批由专门的包负责；pi-ds-tui 不实现审批对话框，也不拦截工具调用。
 
+## 准备
+
+- [ ] 配置已就位：`~/.pi/agent/pi-ds-tui.json`（Windows：`C:/Users/<user>/.pi/agent/pi-ds-tui.json`）。
+- [ ] 未安装时用 `pi -e .` 启动；已安装时直接 `pi`。
+- [ ] `/settings` → Theme 选择 `dsh-dark` 或 `dsh-light`。
+- [ ] 离线预览 Markdown 转换：`npm run preview:markdown`（默认 40/60/80/120 列）。
+
 ## 启动
 
 - [ ] `pi -e .`（默认 fullscreen）能启动，无启动报错。
@@ -87,7 +94,7 @@
 - [ ] `` ```statediagram ``、`` ```classdiagram ``、`` ```erdiagram ``、`` ```sequencediagram `` 显示为 Unicode 图。
 - [ ] 图宽超出终端时显示带 `mermaid:` 标题的源码框，不横向溢出。
 - [ ] 未知 fence（如 `plantuml`）保持原样。
-- [ ] 未闭合的方言 fence 保持原样，不吞掉后续正文。
+- [ ] 未闭合的方言 fence 原样保留：不转换、不丢行、不重复。
 - [ ] 流式输出时方言 fence 暂不渲染，结束后一次成型，不闪烁。
 - [ ] assistant 正文中的 `<context>…</context>`、`<commit_analysis>…</commit_analysis>` 等块被移除。
 - [ ] 代码块内的同名标签保持原样。
