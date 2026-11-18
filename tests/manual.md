@@ -46,6 +46,7 @@
 - [ ] 只关 editor：恢复 pi 默认编辑器。
 - [ ] 只关 working：恢复 pi 默认 working 行。
 - [ ] 只关 status：footer 不再出现 `working` 状态。
+- [ ] 只关 widgets：上下 widget 都消失，editor/footer 正常。
 - [ ] `enabled: false`：完全恢复 pi 默认外观与命令集（除 `/ds-ui`）。
 
 ## M2 Header
@@ -82,3 +83,14 @@
 - [ ] `agent_settled` 后状态清除，不残留。
 - [ ] 关闭 `status.enabled` 后不再写入状态。
 - [ ] 关闭自定义 footer 时，pi 内置 footer 也能看到该状态。
+
+## M3 Widgets
+
+- [ ] editor 上方显示 `Goal`、目标文本与 todo 列表。
+- [ ] 已完成项显示 `✓`，未完成项显示 `◻`。
+- [ ] `/ds-widgets` 在展开/折叠间切换，折叠时只显示 `x/y done`。
+- [ ] `widgets.maxHeight` 生效，超出时显示 `… +N more`。
+- [ ] `widgets.above: false` 后上方 widget 消失，editor 不受影响。
+- [ ] `widgets.below: true` 时 editor 下方显示快捷键提示，且不与 footer 重复。
+- [ ] `widgets.below: false` 后下方 widget 消失。
+- [ ] 切换会话/退出后两个 widget 都清理，不残留空行或旧内容。

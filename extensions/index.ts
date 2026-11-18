@@ -1,8 +1,8 @@
 /**
  * pi-ds-tui entry point.
  *
- * M2 wires chrome around the transcript: footer, header, editor appearance,
- * working row and the extension status line. Every registration is gated by
+ * M3 wires chrome around the transcript: footer, header, editor appearance,
+ * working row, status line and editor widgets. Every registration is gated by
  * its config switch so the extension can be turned off piece by piece.
  */
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent'
@@ -15,9 +15,11 @@ import { createHeaderFactory, DEFAULT_TAGLINE, pickHeaderTip, type HeaderInfo } 
 import { clearWorkingStatus, setWorkingStatus } from './ui/status.ts'
 import { VERSION } from './version.ts'
 import { applyWorking } from './ui/working.ts'
+import { clearWidgets, createWidgetState, installWidgets, toggleWidgets } from './ui/widgets.ts'
 
 const loaded = loadConfig()
 const config = loaded.config
+const widgetState = createWidgetState(config.widgets)
 
 const HEADER_INFO: HeaderInfo = {
   name: 'pi-ds-tui',
@@ -58,6 +60,7 @@ export default function piDsTui(pi: ExtensionAPI): void {
         `editor: ${config.editor.enabled}`,
         `working: ${config.working.enabled}`,
         `status: ${config.status.enabled}`,
+        `widgets: above=${config.widgets.above} below=${config.widgets.below}`,
         `toolCards: ${config.toolCards.enabled}`,
         `overlays: ${config.overlays.enabled}`,
         `warnings: ${loaded.warnings.length}`,
@@ -106,6 +109,18 @@ export default function piDsTui(pi: ExtensionAPI): void {
     pi.on('agent_start', (_event, ctx) => setWorkingStatus(ctx.ui))
     pi.on('agent_settled', (_event, ctx) => clearWorkingStatus(ctx.ui))
     pi.on('session_shutdown', (_event, ctx) => clearWorkingStatus(ctx.ui))
+  }
+
+  if (config.widgets.above || config.widgets.below) {
+    pi.on('session_start', (_event, ctx) => installWidgets(ctx.ui, config.widgets, widgetState))
+    pi.on('session_shutdown', (_event, ctx) => clearWidgets(ctx.ui))
+    pi.registerCommand('ds-widgets', {
+      description: 'Toggle the pi-ds-tui goal widget',
+      handler: async (_args, ctx) => {
+        const expanded = toggleWidgets(widgetState)
+        ctx.ui.notify(`pi-ds-tui: goal widget ${expanded ? 'expanded' : 'collapsed'}`, 'info')
+      },
+    })
   }
 
   if (config.toolCards.enabled) {

@@ -33,7 +33,13 @@ The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defa
   "header": { "enabled": true, "logo": true },
   "editor": { "enabled": true, "prefix": "❯" },
   "working": { "enabled": true, "message": null },
-  "widgets": { "above": true, "below": false, "maxHeight": 8 },
+  "widgets": {
+    "above": true,
+    "below": false,
+    "maxHeight": 8,
+    "goal": "Ship the dsh-tui style interface",
+    "todos": ["[x] Header and footer", "[x] Editor prefix", "[ ] Widgets", "[ ] Tool cards"]
+  },
   "markdown": { "enabled": true, "mermaid": true, "stripPromptTags": true },
   "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 24 },
   "overlays": { "enabled": true },
@@ -56,6 +62,8 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
 | Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
+| Widget above editor: goal/todo panel, collapse with `/ds-widgets` | automatic | `widgets.above` |
+| Widget below editor: key hints | automatic | `widgets.below` |
 | `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
 | Approval overlay: Allow / Deny / Always allow | `/ds-approve` | `overlays.enabled` |
 | Config status | `/ds-ui` | always available |
@@ -69,6 +77,7 @@ cost → cache → tokens → git → effort → mode. Context and the model sta
 | --- | --- |
 | `/ds-ui` | Show config path, feature switches, and warnings |
 | `/ds-header` | Re-apply the pi-ds-tui header |
+| `/ds-widgets` | Toggle the goal/todo widget between expanded and collapsed |
 | `/ds-approve` | Preview the approval overlay (TUI only) |
 
 ## Troubleshooting
@@ -115,6 +124,7 @@ extensions/
     editor.ts         CustomEditor subclass with the prompt glyph
     working.ts        working message/indicator
     status.ts         extension status key
+    widgets.ts        goal/todo and hint widgets
   version.ts          header version
   transcript/
     tool-card.ts      registerToolRenderer resolver
@@ -140,6 +150,7 @@ tests/
   editor.test.ts
   working.test.ts
   status.test.ts
+  widgets.test.ts
   tool-card.test.ts
   overlays.test.ts
   manual.md

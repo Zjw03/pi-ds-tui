@@ -39,6 +39,8 @@ export interface WidgetsConfig {
   readonly above: boolean
   readonly below: boolean
   readonly maxHeight: number
+  readonly goal: string | null
+  readonly todos: readonly string[]
 }
 
 export interface MarkdownConfig {
@@ -80,7 +82,13 @@ export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
   header: { enabled: true, logo: true },
   editor: { enabled: true, prefix: '\u276f' },
   working: { enabled: true, message: null },
-  widgets: { above: true, below: false, maxHeight: 8 },
+  widgets: {
+    above: true,
+    below: false,
+    maxHeight: 8,
+    goal: 'Ship the dsh-tui style interface',
+    todos: ['[x] Header and footer', '[x] Editor prefix', '[ ] Widgets', '[ ] Tool cards'],
+  },
   markdown: { enabled: true, mermaid: true, stripPromptTags: true },
   toolCards: { enabled: true, diffMode: 'auto', collapsedLines: 24 },
   overlays: { enabled: true },
@@ -183,7 +191,7 @@ const FOOTER_KEYS = new Set(['enabled', 'chips', 'narrowWidth'])
 const HEADER_KEYS = new Set(['enabled', 'logo'])
 const EDITOR_KEYS = new Set(['enabled', 'prefix'])
 const WORKING_KEYS = new Set(['enabled', 'message'])
-const WIDGETS_KEYS = new Set(['above', 'below', 'maxHeight'])
+const WIDGETS_KEYS = new Set(['above', 'below', 'maxHeight', 'goal', 'todos'])
 const MARKDOWN_KEYS = new Set(['enabled', 'mermaid', 'stripPromptTags'])
 const TOOL_CARDS_KEYS = new Set(['enabled', 'diffMode', 'collapsedLines'])
 const SIMPLE_SECTION_KEYS = new Set(['enabled'])
@@ -232,6 +240,8 @@ function readWidgets(root: Record<string, unknown>, warnings: string[]): Widgets
     above: readBoolean(section, 'above', DEFAULT_CONFIG.widgets.above, 'widgets', warnings),
     below: readBoolean(section, 'below', DEFAULT_CONFIG.widgets.below, 'widgets', warnings),
     maxHeight: readNumber(section, 'maxHeight', DEFAULT_CONFIG.widgets.maxHeight, 'widgets', warnings, 1),
+    goal: readNullableString(section, 'goal', DEFAULT_CONFIG.widgets.goal, 'widgets', warnings),
+    todos: readStringArray(section, 'todos', DEFAULT_CONFIG.widgets.todos, 'widgets', warnings),
   }
 }
 

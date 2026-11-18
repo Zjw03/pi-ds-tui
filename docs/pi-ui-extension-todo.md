@@ -46,9 +46,11 @@
 > M2 完成记录：`npm run verify` 通过（71 tests）；header（鲸鱼 + DEEPSEEK/PI 大字 + 模型/effort + cwd + tip + 欢迎语）、editor 前缀、working row、状态行已接入；header 在 `resources_discover` 后重新夺回槽位，`/ds-header` 可手动重放；真机清单见 `tests/manual.md`。
 
 **M3 Widgets**
-- [ ] T3.1 Widget above editor
-- [ ] T3.2 Widget below editor
-- [ ] T3.3 Widget 清理
+- [x] T3.1 Widget above editor
+- [x] T3.2 Widget below editor
+- [x] T3.3 Widget 清理
+
+> M3 完成记录：`npm run verify` 通过（86 tests）；goal/todo 与提示 widget 已接入，`/ds-widgets` 可折叠；真机清单见 `tests/manual.md`。
 
 **M4 Markdown**
 - [ ] T4.1 Transformer 骨架
@@ -363,6 +365,8 @@ tests/
 ---
 
 ## M3 Widgets
+
+> 状态：已完成。`npm run verify` 全绿；两个 widget 有独立开关与清理路径。
 
 ### T3.1 Widget above editor
 
