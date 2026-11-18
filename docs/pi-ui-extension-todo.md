@@ -26,7 +26,7 @@
 - [x] T0.5 快照测试骨架
 - [x] T0.6 合规门禁
 
-> M0 完成记录：`npm run verify` 通过（21 tests）；2 套主题 × 56 token；`/ds-ui` 已注册。
+> M0 完成记录：`npm run verify` 通过（23 tests）；2 套主题 × 56 token；`/ds-ui` 已注册。
 
 **M1 薄切片**
 - [ ] T1.1 Footer 骨架
