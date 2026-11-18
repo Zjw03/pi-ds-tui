@@ -124,7 +124,7 @@ export function showApproval(
       overlay: true,
       overlayOptions: {
         width: '70%',
-        minWidth: 32,
+        minWidth: 20,
         maxHeight: '70%',
         anchor: 'center',
         margin: 1,
