@@ -52,7 +52,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Feature | Entry | Config switch |
 | --- | --- | --- |
 | dsh-style footer: cwd, context, tokens, cache, cost, git, mode, effort, model | automatic | `footer.enabled` |
-| Header: name, version, key hints; collapses on narrow terminals | automatic | `header.enabled` |
+| Header: name, version, key hints; collapses on narrow terminals; re-applied on `resources_discover` | automatic | `header.enabled` |
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
 | Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
@@ -68,7 +68,16 @@ cost → cache → tokens → git → effort → mode. Context and the model sta
 | Command | Description |
 | --- | --- |
 | `/ds-ui` | Show config path, feature switches, and warnings |
+| `/ds-header` | Re-apply the pi-ds-tui header |
 | `/ds-approve` | Preview the approval overlay (TUI only) |
+
+## Troubleshooting
+
+### Header still shows another extension's banner
+
+pi has one header slot. An extension loaded before pi-ds-tui can set its header from an async `session_start` handler (feynman does this after scanning resources), which would otherwise win the race. pi-ds-tui re-applies its header on `resources_discover`, which pi emits after every `session_start` handler has settled. Run `/ds-header` to reclaim the slot manually.
+
+Also confirm pi-ds-tui is actually loaded: `pi list` should show it, or run `pi -e .` from the project directory. The header cannot appear if the extension is not loaded at all.
 
 ## Themes
 

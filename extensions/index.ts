@@ -5,7 +5,7 @@
  * working row and the extension status line. Every registration is gated by
  * its config switch so the extension can be turned off piece by piece.
  */
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent'
+import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent'
 import { loadConfig } from './config.ts'
 import { showApproval } from './overlays/approval.ts'
 import { createReadRenderer } from './transcript/tool-card.ts'
@@ -23,6 +23,17 @@ const HEADER_INFO: HeaderInfo = {
   name: 'pi-ds-tui',
   version: VERSION,
   hints: '/ commands \u00b7 ! bash \u00b7 ctrl+o tools',
+}
+
+/**
+ * Apply the header. Called on session_start and again on resources_discover:
+ * extensions loaded before us (feynman) may set their header from an async
+ * session_start handler, and pi has only one header slot. resources_discover
+ * runs after every session_start handler has settled, so this wins the slot.
+ */
+function applyHeader(ctx: ExtensionContext): void {
+  if (!ctx.hasUI) return
+  ctx.ui.setHeader(createHeaderFactory(HEADER_INFO, () => ctx.ui.theme))
 }
 
 export default function piDsTui(pi: ExtensionAPI): void {
@@ -57,8 +68,14 @@ export default function piDsTui(pi: ExtensionAPI): void {
   }
 
   if (config.header.enabled) {
-    pi.on('session_start', (_event, ctx) => {
-      ctx.ui.setHeader(createHeaderFactory(HEADER_INFO, () => ctx.ui.theme))
+    pi.on('session_start', (_event, ctx) => applyHeader(ctx))
+    pi.on('resources_discover', (_event, ctx) => applyHeader(ctx))
+    pi.registerCommand('ds-header', {
+      description: 'Re-apply the pi-ds-tui header',
+      handler: async (_args, ctx) => {
+        applyHeader(ctx)
+        ctx.ui.notify('pi-ds-tui: header applied', 'info')
+      },
     })
   }
 

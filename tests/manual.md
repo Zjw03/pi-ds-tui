@@ -53,6 +53,8 @@
 - [ ] 启动时顶部显示 `pi-ds-tui`、版本、快捷键提示。
 - [ ] 宽度 80 时两行；宽度 20 时单行；宽度 12 时只剩名称。
 - [ ] 切换 dsh-dark / dsh-light，header 颜色正确。
+- [ ] 与 feynman 同时加载时，`resources_discover` 后 header 是 pi-ds-tui。
+- [ ] 被其他扩展覆盖后，`/ds-header` 能立刻拿回 header。
 - [ ] `header.enabled: false` 后恢复 pi 内置 header。
 
 ## M2 Editor
