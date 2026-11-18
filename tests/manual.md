@@ -9,6 +9,7 @@
 - [ ] 配置已就位：`~/.pi/agent/pi-ds-tui.json`（Windows：`C:/Users/<user>/.pi/agent/pi-ds-tui.json`）。
 - [ ] 未安装时用 `pi -e .` 启动；已安装时直接 `pi`。
 - [ ] `/settings` → Theme 选择 `dsh-dark` 或 `dsh-light`。
+- [ ] `dsh-dark` 的其余 token 与 pi `dark` 一致，仅 markdown 标题（`mdHeading`）为鲸鱼蓝 `#4E6FFF`。
 - [ ] 离线预览 Markdown 转换：`npm run preview:markdown`（默认 40/60/80/120 列）。
 
 ## 启动

@@ -101,7 +101,7 @@ Also confirm pi-ds-tui is actually loaded: `pi list` should show it, or run `pi 
 
 ## Themes
 
-`dsh-dark` and `dsh-light` map dsh-tui's semantic palette onto pi's 56 color tokens. Select them in `/settings` → Theme.
+`dsh-dark` mirrors pi's `dark` palette token for token, with one deliberate change: markdown headings (`mdHeading`) use the DeepSeek whale blue `#4E6FFF`. `dsh-light` keeps the dsh-tui light palette. Select them in `/settings` → Theme.
 
 ## Development
 
