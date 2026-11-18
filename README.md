@@ -4,7 +4,7 @@ dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on p
 
 The look and layout are modelled on [dsh-TUI](https://github.com/ccch1mneyyy/dsh-TUI), the DeepSeek TUI plugin. See [Credits](#credits).
 
-> Status: **feature-complete for the dsh look**. The package ships a dsh-style footer, header, editor prefix, working row, Markdown dialect rendering, tool cards and an inline settings panel. Permission prompts, the todo panel and status-line reporting are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages. `npm run verify` also runs a switch matrix and a docs consistency gate.
+> Status: **feature-complete for the dsh look**. The package ships a dsh-style footer, header, editor prefix, working row, Markdown dialect rendering, tool cards and an inline settings panel. Permission prompts, the todo panel and status-line reporting are intentionally not implemented; install dedicated extensions for those. `npm run verify` also runs a switch matrix and a docs consistency gate.
 
 ## Install
 
@@ -98,7 +98,7 @@ Standard `mermaid` fences are left to Pi's built-in renderer. Dialect fences are
 
 ### Header still shows another extension's banner
 
-pi has one header slot. An extension loaded before pi-ds-tui can set its header from an async `session_start` handler (feynman does this after scanning resources), which would otherwise win the race. pi-ds-tui re-applies its header on `resources_discover`, which pi emits after every `session_start` handler has settled. Run `/ds-header` to reclaim the slot manually.
+pi has one header slot. An extension loaded before pi-ds-tui can set its header from an async `session_start` handler (some do this after scanning their resources), which would otherwise win the race. pi-ds-tui re-applies its header on `resources_discover`, which pi emits after every `session_start` handler has settled. Run `/ds-header` to reclaim the slot manually.
 
 Also confirm pi-ds-tui is actually loaded: `pi list` should show it, or run `pi -e .` from the project directory. The header cannot appear if the extension is not loaded at all.
 
@@ -198,9 +198,9 @@ Only UI that pi's public extension surface can replace is implemented:
 - autocomplete, notifications
 - themes, terminal title, editor content
 
-Permission prompts are **not** part of this package. Use your dedicated permission package; pi-ds-tui does not intercept tool calls or render approval dialogs.
+Permission prompts are **not** part of this package. Use a dedicated permission extension; pi-ds-tui does not intercept tool calls or render approval dialogs.
 
-The goal/todo panel is **not** part of this package. Use `@juicesharp/rpiv-todo`; pi-ds-tui does not render a todo widget.
+The goal/todo panel is **not** part of this package; pi-ds-tui does not render a todo widget.
 
 The transcript shell, built-in message components, side panel, pending-message area, and fullscreen internals have no public extension slot and are not implemented.
 

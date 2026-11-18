@@ -109,7 +109,7 @@
 - [ ] 宽度 <40 时降级为纯文本；<16 时只留名称。
 - [ ] `header.logo: false` 时始终纯文本，但仍显示模型/cwd/tip/欢迎语。
 - [ ] 切换 dsh-dark / dsh-light，鲸鱼颜色保持 DeepSeek 蓝，文本跟随主题。
-- [ ] 与 feynman 同时加载时，`resources_discover` 后 header 是 pi-ds-tui。
+- [ ] 与其他会异步设置 header 的扩展同时加载时，`resources_discover` 后 header 是 pi-ds-tui。
 - [ ] 被其他扩展覆盖后，`/ds-header` 能立刻拿回 header。
 - [ ] `header.enabled: false` 后恢复 pi 内置 header。
 
@@ -134,7 +134,7 @@
 
 ## M3 Widgets（已移除）
 
-- 目标/todo 面板及其折叠命令已移除；使用 `@juicesharp/rpiv-todo`。
+- 目标/todo 面板及其折叠命令已移除，改由独立扩展提供。
 - pi-ds-tui 不再注册 editor widget，也不读写 `widgets` 配置。
 
 ## M4 Markdown
