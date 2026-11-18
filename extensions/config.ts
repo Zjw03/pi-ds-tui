@@ -6,9 +6,9 @@
  * throwing. Unknown keys are ignored with a warning so older/newer configs
  * never break startup.
  */
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 export const CONFIG_FILE = 'pi-ds-tui.json'
 
@@ -98,6 +98,35 @@ export interface LoadConfigOptions {
 
 export function configPath(home: string = homedir()): string {
   return join(home, '.pi', 'agent', CONFIG_FILE)
+}
+
+/**
+ * Read the raw config object for editing. Unknown keys are preserved so a
+ * panel edit never drops fields this version does not know about.
+ * Missing or unreadable files read as an empty object.
+ */
+export function readConfigObject(path: string): Record<string, unknown> {
+  let text: string
+  try {
+    text = readFileSync(path, 'utf8')
+  } catch {
+    return {}
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(text)
+    return isRecord(parsed) ? { ...parsed } : {}
+  } catch {
+    return {}
+  }
+}
+
+/** Write the config object atomically: temp file first, then rename. */
+export function writeConfigObject(path: string, value: Record<string, unknown>): void {
+  mkdirSync(dirname(path), { recursive: true })
+  const temp = `${path}.tmp-${process.pid}`
+  writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, 'utf8')
+  renameSync(temp, path)
 }
 
 export function loadConfig(options: LoadConfigOptions = {}): ConfigLoadResult {

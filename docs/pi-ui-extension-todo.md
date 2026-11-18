@@ -72,12 +72,14 @@
 > M5 完成记录：`npm run verify` 通过（93 tests）；接管 8 个内置文件/外壳工具，其他工具交给 `next()` 与 pi；diff 按宽度自动单/双栏；`/ds-tools` 一键展开。
 
 **M6 Overlays**
-- [ ] T6.1 Overlay 基类
+- [x] T6.1 Overlay 基类（不做：只有一个面板）
 - [x] T6.2 权限审批（不做，由专门包负责）
-- [ ] T6.3 问卷面板
-- [ ] T6.4 Picker
-- [ ] T6.5 设置面板
-- [ ] T6.6 预览与 tooltip
+- [x] T6.3 问卷面板（不做：rpiv-ask-user-question 已提供）
+- [x] T6.4 Picker（不做：pi 内置并已继承主题）
+- [x] T6.5 设置面板
+- [x] T6.6 预览与 tooltip（不做：pi 已有）
+
+> M6 完成记录：`npm run verify` 通过（104 tests）；只做了 `/ds-config`，其余四项因重复或无公开 API 而不做。
 
 **M7 Autocomplete 与编辑器**
 - [ ] T7.1 Provider 骨架
@@ -131,6 +133,7 @@
 extensions/
   index.ts
   config.ts
+  configPanel.ts    # /ds-config 设置面板
   ui/
     theme.ts        # theme 包装与缓存
     text.ts         # truncate/wrap/pad
@@ -150,12 +153,6 @@ extensions/
     markdown.ts
     messages.ts
     entries.ts
-  overlays/
-    base.ts
-    questions.ts
-    pickers.ts
-    settings.ts
-    preview.ts
   input/
     autocomplete.ts
     mouse.ts
@@ -164,7 +161,7 @@ tests/
   footer.test.ts
   tool-card.test.ts
   markdown.test.ts
-  overlays.test.ts
+  config-panel.test.ts
 ```
 
 ---
@@ -501,19 +498,13 @@ tests/
 
 ---
 
-## M6 Overlays（非权限）
+## M6 Overlays（只做设置面板）
 
-### T6.1 Overlay 基类
+> 状态：已完成。`npm run verify` 全绿；只新增 `/ds-config`，其余 overlay 因重复或无公开 API 而不做。
 
-- 依赖：T1.4
-- 文件：`extensions/overlays/base.ts`
-- API：`ctx.ui.custom`
-- 步骤：
-  1. 统一尺寸、锚点、margin、`visible`。
-  2. 统一 Esc/Enter/焦点处理。
-  3. 统一 `done()` 与清理。
-- 完成：所有 overlay 复用同一基类。
-- 验证：窄屏、resize、隐藏/显示。
+### T6.1 Overlay 基类（不做）
+
+> 本包只有 `/ds-config` 一个弹层，不需要基类；引入基类只为单一实现增加一层间接。
 
 ### T6.2 权限审批（不实现）
 
@@ -522,46 +513,32 @@ tests/
 - 原文件：`extensions/overlays/approval.ts`（已删除）
 - 原验证：`tests/overlays.test.ts`（已删除）
 
-### T6.3 问卷面板
+### T6.3 问卷面板（不做）
 
-- 依赖：T6.1
-- 文件：`extensions/overlays/questions.ts`
-- 步骤：
-  1. 多问题、单选/多选、自由文本。
-  2. 预览与说明区域。
-- 完成：焦点在输入框时 IME 正常；Esc 取消。
-- 验证：中文输入 + 多问题。
+> `@juicesharp/rpiv-ask-user-question` 已提供完整交互式提问（单选/多选/自由文本）。再做一遍只会抢同一个触发点。
 
-### T6.4 Picker
+### T6.4 Picker（不做）
 
-- 依赖：T6.1
-- 文件：`extensions/overlays/pickers.ts`
-- API：`SelectList` / `SettingsList`
-- 步骤：
-  1. 模型、effort、mode 三个 picker。
-  2. 搜索与选中态。
-- 完成：窄屏可读；选中结果回传。
-- 验证：每个 picker 手动一次。
+> pi 的 `/model`、`/settings` 等内置 picker 使用 `accent` / `muted` / `dim` token，已经跟着 dsh 主题变色。重写只会得到同样的外观，还要自己维护 `Esc` / IME / 搜索。
 
 ### T6.5 设置面板
 
-- 依赖：T6.1、T0.2
-- 文件：`extensions/overlays/settings.ts`
-- 步骤：
-  1. 分页展示配置。
-  2. 修改后写回配置文件；非法值提示。
-- 完成：重启后保留；非法值不写盘。
-- 验证：改三项并重启。
+- 依赖：T0.2
+- 文件：`extensions/configPanel.ts`、`extensions/config.ts`
+- API：`ctx.ui.custom(factory, { overlay, overlayOptions })`；`@earendil-works/pi-tui` 的 `SettingsList`
+- 实现：
+  1. 16 项开关按 `CONFIG_FIELDS` 生成，值从文件读，缺失用默认值。
+  2. `Enter`/`Space` 循环取值；布尔为 `on`/`off`，`diffMode` 三态，`collapsedLines` 枚举。
+  3. 每次变更立即写盘：临时文件 + rename，保留未知 key。
+  4. 写盘失败在面板底部显示错误，不关面板、不崩溃。
+  5. `Esc` 关闭；若写过盘则 `ctx.reload()` 应用新配置。
+  6. `/ds-config` 在 `enabled: false` 时仍注册，否则无法从面板里重新开启。
+- 完成：40–120 列不溢出；只改一项时文件其余内容不动。
+- 验证：`tests/config-panel.test.ts`。
 
-### T6.6 预览与 tooltip
+### T6.6 预览与 tooltip（不做）
 
-- 依赖：T6.1
-- 文件：`extensions/overlays/preview.ts`
-- 步骤：
-  1. 图片/长文本预览。
-  2. 关闭后焦点回到原组件。
-- 完成：叠加两个 overlay 时关闭顺序正确。
-- 验证：连续打开/关闭。
+> 图片预览与工具卡展开由 pi 自身处理，本包没有额外的预览需求。
 
 ---
 

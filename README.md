@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M5 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line, Markdown dialect rendering and tool cards for the built-in file and shell tools. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
+> Status: **M5 complete, `/ds-config` added**. The package ships a dsh-style footer, header, editor prefix, working row, status line, Markdown dialect rendering, tool cards and an in-terminal settings panel. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
 
 ## Install
 
@@ -24,6 +24,8 @@ The package is `private` while the UI is under construction. Remove `"private": 
 ## Config
 
 The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defaults; malformed values fall back field by field and show a warning.
+
+Run `/ds-config` to edit it in place: every toggle is written immediately, unknown keys are preserved, and the extension reloads when you close the panel. Type to filter the list, Enter/Space to change a value, `Esc` to close.
 
 ```jsonc
 {
@@ -60,6 +62,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Tool cards for `read`, `write`, `edit`, `bash`, `powershell`, `grep`, `find`, `ls`: status dot, one-line argument, duration, collapse/expand | automatic | `toolCards.enabled` |
 | Edit diffs: unified below 120 columns, two columns above; colors from `toolDiff*` tokens | automatic | `toolCards.diffMode` |
 | Other tools (MCP, subagents, plugins) keep their own renderers | automatic | — |
+| Settings panel: toggle every switch, write back to `pi-ds-tui.json`, reload | `/ds-config` | always available |
 | Markdown: dialect Mermaid (`statediagram`, `classdiagram`, `erdiagram`, `sequencediagram`) as Unicode art | automatic | `markdown.enabled` / `markdown.mermaid` |
 | Config status | `/ds-ui` | always available |
 
@@ -75,6 +78,7 @@ Standard `mermaid` fences are left to Pi's built-in renderer. Dialect fences are
 | `/ds-ui` | Show config path, feature switches, and warnings |
 | `/ds-header` | Re-apply the pi-ds-tui header |
 | `/ds-tools` | Expand or collapse every tool result |
+| `/ds-config` | Edit `pi-ds-tui.json` in a settings overlay; saves on change and reloads |
 
 ## Troubleshooting
 
@@ -122,7 +126,8 @@ Manual smoke tests are in [tests/manual.md](tests/manual.md).
 ```text
 extensions/
   index.ts            extension entry (/ds-ui, /ds-header)
-  config.ts           config schema, defaults, validation
+  config.ts           config schema, defaults, validation, file IO
+  configPanel.ts      /ds-config settings list and overlay layout
   ui/
     theme.ts          theme wrappers
     text.ts           width-safe truncate/wrap/pad
@@ -162,6 +167,7 @@ tests/
   working.test.ts
   status.test.ts
   tool-card.test.ts
+  config-panel.test.ts
   markdown.test.ts
   manual.md
 docs/

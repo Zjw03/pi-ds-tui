@@ -1,12 +1,14 @@
 /**
  * pi-ds-tui entry point.
  *
- * M4 wires chrome around the transcript: footer, header, editor appearance,
- * working row, status line and Markdown transformation. Every registration is
- * gated by its config switch so the extension can be turned off piece by piece.
+ * Wires chrome around the transcript (footer, header, editor appearance,
+ * working row, status line), Markdown transformation and tool cards. Every
+ * registration is gated by its config switch so the extension can be turned
+ * off piece by piece.
  */
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent'
-import { loadConfig } from './config.ts'
+import { loadConfig, readConfigObject } from './config.ts'
+import { CONFIG_OVERLAY, ConfigPanel } from './configPanel.ts'
 import { createToolRenderers } from './transcript/tool-card.ts'
 import { createMarkdownTransformer, MARKDOWN_MESSAGE_TYPES } from './transcript/markdown.ts'
 import { installEditor } from './ui/editor.ts'
@@ -46,6 +48,35 @@ function applyHeader(ctx: ExtensionContext): void {
   ctx.ui.setHeader(createHeaderFactory(info, () => ctx.ui.theme, config.header.logo))
 }
 
+/** `/ds-config` stays available even when the rest of the extension is off. */
+function registerConfigCommand(pi: ExtensionAPI): void {
+  pi.registerCommand('ds-config', {
+    description: 'Edit pi-ds-tui settings',
+    handler: async (_args, ctx) => {
+      if (!ctx.hasUI) return
+      const draft = readConfigObject(loaded.path)
+      const result = await ctx.ui.custom<{ dirty: boolean }>(
+        (tui, theme, _keybindings, done) =>
+          new ConfigPanel({
+            theme,
+            path: loaded.path,
+            draft,
+            requestRender: () => tui.requestRender(),
+            done,
+          }),
+        { overlay: true, overlayOptions: CONFIG_OVERLAY },
+      )
+      if (!result.dirty) return
+      try {
+        await ctx.reload()
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        ctx.ui.notify(`pi-ds-tui: saved, but reload failed (${message}); run /reload`, 'warning')
+      }
+    },
+  })
+}
+
 export default function piDsTui(pi: ExtensionAPI): void {
   pi.registerCommand('ds-ui', {
     description: 'Show pi-ds-tui config status',
@@ -66,6 +97,8 @@ export default function piDsTui(pi: ExtensionAPI): void {
       ctx.ui.notify(lines.join('\n'), loaded.warnings.length > 0 ? 'warning' : 'info')
     },
   })
+
+  registerConfigCommand(pi)
 
   if (!config.enabled) return
 

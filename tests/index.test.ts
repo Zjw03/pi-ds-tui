@@ -20,6 +20,7 @@ function harness(): {
   markdownTransformers: unknown[]
   toolRenderers: unknown[]
   notifications: string[]
+  customCalls: unknown[]
   ui: unknown
   ctx: unknown
 } {
@@ -28,6 +29,7 @@ function harness(): {
   const headerCalls: unknown[] = []
   const markdownTransformers: unknown[] = []
   const toolRenderers: unknown[] = []
+  const customCalls: unknown[] = []
   let toolsExpanded = false
   const notifications: string[] = []
   const ui = {
@@ -44,6 +46,10 @@ function harness(): {
     getToolsExpanded: () => toolsExpanded,
     setToolsExpanded: (value: boolean) => {
       toolsExpanded = value
+    },
+    custom: async (factory: unknown, options: unknown) => {
+      customCalls.push({ factory, options })
+      return { dirty: false }
     },
   }
   const ctx = {
@@ -63,6 +69,7 @@ function harness(): {
     markdownTransformers,
     toolRenderers,
     notifications,
+    customCalls,
     ui,
     ctx,
   }
@@ -117,4 +124,19 @@ test('markdown transformer is registered when enabled', () => {
   const h = harness()
   piDsTui(api(h))
   assert.equal(h.markdownTransformers.length, 1)
+})
+
+test('ds-config opens the settings overlay', async () => {
+  const h = harness()
+  piDsTui(api(h))
+  const command = h.commands.get('ds-config') as {
+    handler: (args: string, ctx: unknown) => Promise<void>
+  }
+  assert.ok(command !== undefined)
+
+  await command.handler('', h.ctx)
+  assert.equal(h.customCalls.length, 1)
+
+  const call = h.customCalls[0] as { options: { overlay?: boolean } }
+  assert.equal(call.options.overlay, true)
 })
