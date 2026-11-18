@@ -15,6 +15,7 @@ const theme = {
 }
 
 function context(overrides: Partial<Record<string, unknown>> = {}): ToolRenderContext {
+  // SAFETY: the cards read only these fields; the cast keeps the fixture small.
   return {
     args: {},
     toolCallId: 'call-1',

@@ -38,10 +38,12 @@
 > M1 完成记录：`npm run verify` 通过（48 tests）；footer、read 卡片、审批 overlay 已接入；真机冒烟清单见 `tests/manual.md`。
 
 **M2 Chrome**
-- [ ] T2.1 Header
-- [ ] T2.2 Editor 外观
-- [ ] T2.3 Working row
-- [ ] T2.4 状态行接入
+- [x] T2.1 Header
+- [x] T2.2 Editor 外观
+- [x] T2.3 Working row
+- [x] T2.4 状态行接入
+
+> M2 完成记录：`npm run verify` 通过（66 tests）；header、editor 前缀、working row、状态行已接入；真机清单见 `tests/manual.md`。
 
 **M3 Widgets**
 - [ ] T3.1 Widget above editor
@@ -308,6 +310,8 @@ tests/
 ---
 
 ## M2 Chrome
+
+> 状态：已完成。`npm run verify` 全绿；四项能力都有独立开关；编辑器仍继承 `CustomEditor`。
 
 ### T2.1 Header
 

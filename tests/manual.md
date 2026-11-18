@@ -42,4 +42,38 @@
 - [ ] 只关 footer：工具卡与 overlay 正常。
 - [ ] 只关 toolCards：footer 与 overlay 正常。
 - [ ] 只关 overlays：footer 与工具卡正常。
+- [ ] 只关 header：其余 chrome 正常。
+- [ ] 只关 editor：恢复 pi 默认编辑器。
+- [ ] 只关 working：恢复 pi 默认 working 行。
+- [ ] 只关 status：footer 不再出现 `working` 状态。
 - [ ] `enabled: false`：完全恢复 pi 默认外观与命令集（除 `/ds-ui`）。
+
+## M2 Header
+
+- [ ] 启动时顶部显示 `pi-ds-tui`、版本、快捷键提示。
+- [ ] 宽度 80 时两行；宽度 20 时单行；宽度 12 时只剩名称。
+- [ ] 切换 dsh-dark / dsh-light，header 颜色正确。
+- [ ] `header.enabled: false` 后恢复 pi 内置 header。
+
+## M2 Editor
+
+- [ ] 输入框首行出现 `❯`，颜色跟随 borderColor。
+- [ ] 中文 IME 候选窗位置正确。
+- [ ] 粘贴 20 行显示折叠标记，不丢内容。
+- [ ] 输入 `/`、`@`、Tab 补全正常。
+- [ ] Ctrl+C / Ctrl+D / 模型切换快捷键正常。
+- [ ] `editor.enabled: false` 后恢复 pi 默认编辑器。
+
+## M2 Working row
+
+- [ ] 发送长回答时显示自定义文案与 spinner。
+- [ ] 流式开始/结束没有重复行。
+- [ ] `working.message` 为 null 时显示 pi 默认文案。
+- [ ] `working.enabled: false` 后恢复默认。
+
+## M2 Status line
+
+- [ ] agent 运行时 footer 出现 `working`（key `pi-ds-tui`）。
+- [ ] `agent_settled` 后状态清除，不残留。
+- [ ] 关闭 `status.enabled` 后不再写入状态。
+- [ ] 关闭自定义 footer 时，pi 内置 footer 也能看到该状态。

@@ -1,18 +1,29 @@
 /**
  * pi-ds-tui entry point.
  *
- * M1 wires three public surfaces: the footer, the `read` tool card, and an
- * approval overlay. Every registration is gated by its config switch so the
- * extension can be turned off piece by piece.
+ * M2 wires chrome around the transcript: footer, header, editor appearance,
+ * working row and the extension status line. Every registration is gated by
+ * its config switch so the extension can be turned off piece by piece.
  */
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent'
 import { loadConfig } from './config.ts'
 import { showApproval } from './overlays/approval.ts'
 import { createReadRenderer } from './transcript/tool-card.ts'
+import { installEditor } from './ui/editor.ts'
 import { createFooterFactory } from './ui/footer.ts'
+import { createHeaderFactory, type HeaderInfo } from './ui/header.ts'
+import { clearWorkingStatus, setWorkingStatus } from './ui/status.ts'
+import { VERSION } from './version.ts'
+import { applyWorking } from './ui/working.ts'
 
 const loaded = loadConfig()
 const config = loaded.config
+
+const HEADER_INFO: HeaderInfo = {
+  name: 'pi-ds-tui',
+  version: VERSION,
+  hints: '/ commands \u00b7 ! bash \u00b7 ctrl+o tools',
+}
 
 export default function piDsTui(pi: ExtensionAPI): void {
   pi.registerCommand('ds-ui', {
@@ -22,6 +33,10 @@ export default function piDsTui(pi: ExtensionAPI): void {
         `config: ${loaded.path} (${loaded.found ? 'found' : 'defaults'})`,
         `enabled: ${config.enabled}`,
         `footer: ${config.footer.enabled}`,
+        `header: ${config.header.enabled}`,
+        `editor: ${config.editor.enabled}`,
+        `working: ${config.working.enabled}`,
+        `status: ${config.status.enabled}`,
         `toolCards: ${config.toolCards.enabled}`,
         `overlays: ${config.overlays.enabled}`,
         `warnings: ${loaded.warnings.length}`,
@@ -39,6 +54,29 @@ export default function piDsTui(pi: ExtensionAPI): void {
         createFooterFactory(ctx, footerData, config.footer, theme),
       )
     })
+  }
+
+  if (config.header.enabled) {
+    pi.on('session_start', (_event, ctx) => {
+      ctx.ui.setHeader(createHeaderFactory(HEADER_INFO))
+    })
+  }
+
+  if (config.editor.enabled) {
+    pi.on('session_start', (_event, ctx) => {
+      installEditor(ctx.ui, config.editor.prefix)
+    })
+  }
+
+  if (config.working.enabled) {
+    pi.on('session_start', (_event, ctx) => applyWorking(ctx.ui, config.working))
+  }
+
+  if (config.status.enabled) {
+    pi.on('session_start', (_event, ctx) => clearWorkingStatus(ctx.ui))
+    pi.on('agent_start', (_event, ctx) => setWorkingStatus(ctx.ui))
+    pi.on('agent_settled', (_event, ctx) => clearWorkingStatus(ctx.ui))
+    pi.on('session_shutdown', (_event, ctx) => clearWorkingStatus(ctx.ui))
   }
 
   if (config.toolCards.enabled) {

@@ -11,6 +11,7 @@ import {
 import { renderPanel } from '../extensions/overlays/base.ts'
 import { assertWidth } from './helpers/render.ts'
 
+// SAFETY: the panel only uses fg/bold; the cast keeps the test double small.
 const theme = {
   fg: (_color: string, text: string) => text,
   bold: (text: string) => text,

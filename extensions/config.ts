@@ -65,6 +65,7 @@ export interface DsUiConfig {
   readonly autocomplete: { readonly enabled: boolean }
   readonly messages: { readonly enabled: boolean }
   readonly entries: { readonly enabled: boolean }
+  readonly status: { readonly enabled: boolean }
   readonly mouse: { readonly enabled: boolean }
 }
 
@@ -85,6 +86,7 @@ export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
   autocomplete: { enabled: true },
   messages: { enabled: true },
   entries: { enabled: true },
+  status: { enabled: true },
   mouse: { enabled: false },
 })
 
@@ -152,6 +154,7 @@ export function loadConfig(options: LoadConfigOptions = {}): ConfigLoadResult {
     autocomplete: { enabled: readSectionBoolean(raw, 'autocomplete', 'enabled', true, warnings) },
     messages: { enabled: readSectionBoolean(raw, 'messages', 'enabled', true, warnings) },
     entries: { enabled: readSectionBoolean(raw, 'entries', 'enabled', true, warnings) },
+    status: { enabled: readSectionBoolean(raw, 'status', 'enabled', true, warnings) },
     mouse: { enabled: readSectionBoolean(raw, 'mouse', 'enabled', false, warnings) },
   })
 
@@ -171,6 +174,7 @@ const TOP_LEVEL_KEYS = new Set([
   'autocomplete',
   'messages',
   'entries',
+  'status',
   'mouse',
 ])
 

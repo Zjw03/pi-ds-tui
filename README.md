@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M1 thin slice**. The package ships a dsh-style footer, a `read` tool card, and an approval overlay, all gated by config switches.
+> Status: **M2 chrome**. The package ships a dsh-style footer, header, editor prefix, working row, status line, a `read` tool card, and an approval overlay, all gated by config switches.
 
 ## Install
 
@@ -40,6 +40,7 @@ The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defa
   "autocomplete": { "enabled": true },
   "messages": { "enabled": true },
   "entries": { "enabled": true },
+  "status": { "enabled": true },
   "mouse": { "enabled": false }
 }
 ```
@@ -51,6 +52,10 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Feature | Entry | Config switch |
 | --- | --- | --- |
 | dsh-style footer: cwd, context, tokens, cache, cost, git, mode, effort, model | automatic | `footer.enabled` |
+| Header: name, version, key hints; collapses on narrow terminals | automatic | `header.enabled` |
+| Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
+| Working row: custom message and spinner frames | automatic | `working.enabled` |
+| Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
 | `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
 | Approval overlay: Allow / Deny / Always allow | `/ds-approve` | `overlays.enabled` |
 | Config status | `/ds-ui` | always available |
@@ -95,6 +100,11 @@ extensions/
     component.ts      Component base class
     icons.ts          shared glyphs
     footer.ts         footer snapshot + renderer + component
+    header.ts         startup header
+    editor.ts         CustomEditor subclass with the prompt glyph
+    working.ts        working message/indicator
+    status.ts         extension status key
+  version.ts          header version
   transcript/
     tool-card.ts      registerToolRenderer resolver
     tool-call.ts      read call row
@@ -115,6 +125,10 @@ tests/
   component.test.ts
   theme.test.ts
   footer.test.ts
+  header.test.ts
+  editor.test.ts
+  working.test.ts
+  status.test.ts
   tool-card.test.ts
   overlays.test.ts
   manual.md
