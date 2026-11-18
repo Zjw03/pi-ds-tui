@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { stripTerminalSequences, visibleWidth } from '@earendil-works/pi-tui'
 import { DEFAULT_CONFIG } from '../extensions/config.ts'
 import {
   formatTokens,
@@ -14,6 +15,9 @@ const theme = {
   bold: (text: string) => text,
   dim: (text: string) => text,
 }
+
+/** The footer emits truecolor for the whale blue; compare visible text. */
+const plain = (text: string): string => stripTerminalSequences(text)
 
 const snapshot: FooterSnapshot = {
   cwd: '/home/user/projects/pi-ds-tui',
@@ -30,7 +34,7 @@ test('wide footer puts cwd, branch and model on the line above the bar', () => {
   const lines = renderFooter(snapshot, 120, DEFAULT_CONFIG.footer, theme)
   assertWidth(lines, 120)
 
-  const header = lines[0] ?? ''
+  const header = plain(lines[0] ?? '')
   assert.ok(header.startsWith(' '), 'footer lines share the one-column margin')
   assert.ok(header.includes('/home/user/projects/pi-ds-tui'))
   assert.ok(header.includes('\u2387 main'))
@@ -64,7 +68,7 @@ test('thinking is dropped when `effort` is not selected', () => {
     { ...DEFAULT_CONFIG.footer, chips: ['model', 'context', 'cwd', 'git'] },
     theme,
   )
-  const header = lines[0] ?? ''
+  const header = plain(lines[0] ?? '')
   assert.ok(header.includes('model-x'))
   assert.ok(!header.includes('high'))
 })
@@ -74,7 +78,7 @@ test('the bar fills the inner width and grows with the terminal', () => {
     const lines = renderFooter(snapshot, width, DEFAULT_CONFIG.footer, theme)
     const bar = lines[1] ?? ''
     const inner = width - 2
-    assert.equal(bar.length, width - 1)
+    assert.equal(visibleWidth(bar), width - 1)
     const filled = (bar.match(/\u2588/g) ?? []).length
     // 42% of the track, which excludes one space and the readout.
     const track = inner - '42% \u00b7 200k \u00b7 CH 87%'.length - 1
@@ -170,7 +174,7 @@ test('cwd can be turned off through the chip list', () => {
   )
   assert.ok(!lines.join('\n').includes('/home/user/projects/pi-ds-tui'))
   assert.ok(lines.some((line) => line.includes('\u2591')))
-  assert.ok(lines[0]?.includes('model-x'))
+  assert.ok(plain(lines[0] ?? '').includes('model-x'))
 })
 
 test('formatTokens follows the pi compact format', () => {

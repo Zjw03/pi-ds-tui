@@ -2,18 +2,15 @@
  * dsh-style footer.
  *
  * Layout:
- *   line 1  cwd
- *   line 2  left: context / tokens / cache / cost / git / effort
- *           right: model + thinking level
+ *   line 1  left: cwd, branch          right: model + thinking level
+ *   line 2  full-width context meter with a right-aligned readout
  *   line 3  extension statuses from setStatus()
- *
- * Chips drop in a fixed priority order when the terminal is narrow:
- * cost -> cache -> tokens -> git -> effort. Context and the model stay.
  */
 import type { Component } from '@earendil-works/pi-tui'
 import type { Theme } from '@earendil-works/pi-coding-agent'
 import type { FooterConfig } from '../config.ts'
 import { fitLine, padRight, sanitizeSingleLine, truncateMiddle, visibleWidth } from './text.ts'
+import { whaleBlue } from './whale.ts'
 
 export interface FooterSnapshot {
   readonly cwd: string
@@ -135,10 +132,10 @@ function pressureToken(percent: number | null): ColorToken {
   return 'dim'
 }
 
-function fillToken(percent: number): ColorToken {
-  if (percent >= 95) return 'error'
-  if (percent >= 80) return 'warning'
-  return 'accent'
+function fillCells(text: string, percent: number, theme: FooterTheme): string {
+  if (percent >= 95) return theme.fg('error', text)
+  if (percent >= 80) return theme.fg('warning', text)
+  return whaleBlue(text)
 }
 
 /** `42% · 200k · CH 87%` — the bar's right-hand readout. */
@@ -169,7 +166,7 @@ export function renderContextBar(
   if (trackWidth <= 0) return fitLine(readout, width)
 
   const filled = Math.round((clamped / 100) * trackWidth)
-  const fill = theme.fg(fillToken(clamped), BAR_FILL.repeat(filled))
+  const fill = fillCells(BAR_FILL.repeat(filled), clamped, theme)
   const track = theme.fg('dim', BAR_TRACK.repeat(trackWidth - filled))
   return `${fill}${track} ${readout}`
 }
@@ -234,7 +231,7 @@ export function formatTokens(count: number): string {
 
 function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme, includeThinking: boolean): string {
   const model = snapshot.model ?? 'no-model'
-  const label = theme.fg('accent', model)
+  const label = whaleBlue(model)
   if (!includeThinking || snapshot.thinking === null || snapshot.thinking.length === 0) return label
   return `${label}${theme.fg('dim', ` \u00b7 ${snapshot.thinking}`)}`
 }
