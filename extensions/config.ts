@@ -22,6 +22,7 @@ export interface FooterConfig {
 
 export interface HeaderConfig {
   readonly enabled: boolean
+  readonly logo: boolean
 }
 
 export interface EditorConfig {
@@ -76,7 +77,7 @@ export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
     chips: ['model', 'context', 'tokens', 'cache', 'cost', 'git', 'mode', 'effort', 'cwd'],
     narrowWidth: 60,
   },
-  header: { enabled: true },
+  header: { enabled: true, logo: true },
   editor: { enabled: true, prefix: '\u276f' },
   working: { enabled: true, message: null },
   widgets: { above: true, below: false, maxHeight: 8 },
@@ -179,7 +180,7 @@ const TOP_LEVEL_KEYS = new Set([
 ])
 
 const FOOTER_KEYS = new Set(['enabled', 'chips', 'narrowWidth'])
-const HEADER_KEYS = new Set(['enabled'])
+const HEADER_KEYS = new Set(['enabled', 'logo'])
 const EDITOR_KEYS = new Set(['enabled', 'prefix'])
 const WORKING_KEYS = new Set(['enabled', 'message'])
 const WIDGETS_KEYS = new Set(['above', 'below', 'maxHeight'])
@@ -200,7 +201,10 @@ function readFooter(root: Record<string, unknown>, warnings: string[]): FooterCo
 function readHeader(root: Record<string, unknown>, warnings: string[]): HeaderConfig {
   const section = readObject(root, 'header', warnings)
   checkUnknown(section, HEADER_KEYS, 'header', warnings)
-  return { enabled: readBoolean(section, 'enabled', DEFAULT_CONFIG.header.enabled, 'header', warnings) }
+  return {
+    enabled: readBoolean(section, 'enabled', DEFAULT_CONFIG.header.enabled, 'header', warnings),
+    logo: readBoolean(section, 'logo', DEFAULT_CONFIG.header.logo, 'header', warnings),
+  }
 }
 
 function readEditor(root: Record<string, unknown>, warnings: string[]): EditorConfig {

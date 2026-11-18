@@ -43,7 +43,7 @@
 - [x] T2.3 Working row
 - [x] T2.4 状态行接入
 
-> M2 完成记录：`npm run verify` 通过（68 tests）；header、editor 前缀、working row、状态行已接入；header 在 `resources_discover` 后重新夺回槽位，`/ds-header` 可手动重放；真机清单见 `tests/manual.md`。
+> M2 完成记录：`npm run verify` 通过（71 tests）；header（含 13 行像素鲸鱼）、editor 前缀、working row、状态行已接入；header 在 `resources_discover` 后重新夺回槽位，`/ds-header` 可手动重放；真机清单见 `tests/manual.md`。
 
 **M3 Widgets**
 - [ ] T3.1 Widget above editor

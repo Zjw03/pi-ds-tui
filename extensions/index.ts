@@ -33,7 +33,7 @@ const HEADER_INFO: HeaderInfo = {
  */
 function applyHeader(ctx: ExtensionContext): void {
   if (!ctx.hasUI) return
-  ctx.ui.setHeader(createHeaderFactory(HEADER_INFO, () => ctx.ui.theme))
+  ctx.ui.setHeader(createHeaderFactory(HEADER_INFO, () => ctx.ui.theme, config.header.logo))
 }
 
 export default function piDsTui(pi: ExtensionAPI): void {
