@@ -119,13 +119,13 @@
 
 ## M2 Working row
 
-- [ ] agent 运行时输入框上边框变为 `── ⠋ Working... ──────`。
+- [ ] agent 运行时 editor 上方出现 `⠋ Working...`，靠左对齐，右侧不画任何填充。
 - [ ] 有输出 token 后变成 `Working... (↓ 742 tokens · 0s)`，每秒刷新秒数。
 - [ ] 无 token 但运行超过 3 秒时显示 `Working... (4s)`。
 - [ ] 多轮工具调用期间 token 累加，不重复计数，也不跨用户指令累加。
-- [ ] 本轮结束后上边框恢复为普通分隔线，不残留文案。
+- [ ] 本轮结束后该行消失，不残留文案。
 - [ ] `working.message` 自定义文案替换 `Working...`，括号内统计保留。
-- [ ] `working.enabled: false` 后回到 pi 默认（不嵌入边框、不显示统计）。
+- [ ] `working.enabled: false` 后完全回到 pi 默认行。
 
 ## M3 Widgets（已移除）
 

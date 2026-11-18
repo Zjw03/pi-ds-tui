@@ -122,7 +122,7 @@ export default function piDsTui(pi: ExtensionAPI): void {
 
   if (config.editor.enabled) {
     pi.on('session_start', (_event, ctx) => {
-      installEditor(ctx.ui, config.editor.prefix, config.working.enabled)
+      installEditor(ctx.ui, config.editor.prefix)
     })
   }
 
