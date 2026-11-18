@@ -3,12 +3,12 @@
  *
  * Layout:
  *   line 1  cwd
- *   line 2  left: context / tokens / cache / cost / git / mode / effort
+ *   line 2  left: context / tokens / cache / cost / git / effort
  *           right: model + thinking level
  *   line 3  extension statuses from setStatus()
  *
  * Chips drop in a fixed priority order when the terminal is narrow:
- * cost -> cache -> tokens -> git -> effort -> mode. Context and the model stay.
+ * cost -> cache -> tokens -> git -> effort. Context and the model stay.
  */
 import type { Component } from '@earendil-works/pi-tui'
 import type { Theme } from '@earendil-works/pi-coding-agent'
@@ -20,7 +20,6 @@ export interface FooterSnapshot {
   readonly model: string | null
   readonly provider: string | null
   readonly thinking: string | null
-  readonly mode: string
   readonly contextPercent: number | null
   readonly contextWindow: number
   readonly contextTokens: number | null
@@ -61,7 +60,6 @@ export interface FooterSessionLike {
 
 export interface FooterContextLike {
   readonly cwd: string
-  readonly mode: string
   readonly model?: { readonly id?: string; readonly provider?: string } | undefined
   readonly thinkingLevel?: string | undefined
   getContextUsage?(): { readonly percent: number | null; readonly contextWindow: number; readonly tokens: number | null } | undefined
@@ -75,7 +73,7 @@ export interface FooterStatsCache {
   cost: number
 }
 
-const DROP_ORDER = ['cost', 'cache', 'tokens', 'git', 'effort', 'mode'] as const
+const DROP_ORDER = ['cost', 'cache', 'tokens', 'git', 'effort'] as const
 
 export function snapshotFooter(
   ctx: FooterContextLike,
@@ -93,7 +91,6 @@ export function snapshotFooter(
     model: ctx.model?.id ?? null,
     provider: ctx.model?.provider ?? null,
     thinking: ctx.thinkingLevel ?? null,
-    mode: ctx.mode,
     contextPercent: usage?.percent ?? null,
     contextWindow: usage?.contextWindow ?? 0,
     contextTokens: usage?.tokens ?? null,
@@ -173,8 +170,6 @@ function chipText(key: string, snapshot: FooterSnapshot): string | null {
       return snapshot.gitBranch !== null && snapshot.gitBranch.length > 0
         ? `git:${snapshot.gitBranch}`
         : null
-    case 'mode':
-      return snapshot.mode
     case 'effort':
       return snapshot.thinking !== null && snapshot.thinking.length > 0
         ? `think:${snapshot.thinking}`
@@ -245,8 +240,6 @@ function chipColor(key: string, snapshot: FooterSnapshot): string {
       if (snapshot.contextPercent > 70) return 'warning'
       return 'muted'
     case 'git':
-      return 'muted'
-    case 'mode':
       return 'muted'
     case 'effort':
       return 'muted'

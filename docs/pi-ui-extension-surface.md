@@ -149,6 +149,7 @@
 | 位置 | transcript 中工具输出的展开/收起 |
 | 对应功能 | 一键展开或收起全部工具输出 |
 | API | `ctx.ui.setToolsExpanded(boolean)`；`ctx.ui.getToolsExpanded()` |
+| 约束 | pi 已有 `app.tools.expand`（默认 `ctrl+o`）切换全部输出，扩展不必再注册命令；只在需要程序化控制时用这两个 API |
 | 参考 | 无直接对应；pi-cc-extensions 通过工具卡自身状态实现 |
 
 ## 4. 临时 UI

@@ -76,14 +76,6 @@ export const CONFIG_FIELDS: readonly ConfigField[] = [
     values: ON_OFF,
   },
   {
-    id: 'status.enabled',
-    path: ['status', 'enabled'],
-    label: 'Status line',
-    description: '`working` status while the agent runs.',
-    kind: 'boolean',
-    values: ON_OFF,
-  },
-  {
     id: 'markdown.enabled',
     path: ['markdown', 'enabled'],
     label: 'Markdown transformer',

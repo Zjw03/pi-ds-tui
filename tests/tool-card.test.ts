@@ -102,15 +102,20 @@ test('read call shows path and range', () => {
   assert.match(text, /1\.2s/)
 })
 
-test('write call shows line count, not the body', () => {
+test('write call previews the first lines when collapsed', () => {
   const args = { path: '/work/a.md', content: 'one\ntwo\nthree' }
   const collapsed = callLines('write', args)
-  assert.equal(collapsed.length, 1)
   assert.match(collapsed.join('\n'), /\+3 lines/)
+  assert.match(collapsed.join('\n'), /three/)
 
-  const expanded = callLines('write', args, 80, { expanded: true })
-  assert.ok(expanded.length > 1)
-  assert.match(expanded.join('\n'), /three/)
+  const long = Array.from({ length: 30 }, (_, index) => `line ${index + 1}`).join('\n')
+  const many = callLines('write', { path: '/work/a.md', content: long })
+  assert.match(many.join('\n'), /line 10/)
+  assert.doesNotMatch(many.join('\n'), /line 11/)
+  assert.match(many.join('\n'), /\+20 lines \(ctrl\+o to expand\)/)
+
+  const expanded = callLines('write', { path: '/work/a.md', content: long }, 80, { expanded: true })
+  assert.match(expanded.join('\n'), /line 30/)
 })
 
 test('edit call reports the edit count', () => {
@@ -158,27 +163,34 @@ test('describeCall tolerates missing and malformed arguments', () => {
 
 test('result collapses long output with an expand hint', () => {
   const text = Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join('\n')
-  const lines = resultLines('read', result(text))
+  const lines = resultLines('grep', result(text))
   assert.equal(lines.length, CONFIG.collapsedLines + 1)
-  assert.match(lines.at(-1) ?? '', /\+16 lines/)
+  assert.match(lines.at(-1) ?? '', /\+32 lines/)
   assert.match(lines.at(-1) ?? '', /ctrl\+o to expand/)
+})
+
+test('a collapsed read keeps its body out of the transcript', () => {
+  const text = Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join('\n')
+  assert.deepEqual(resultLines('read', result(text)), [])
+  assert.equal(resultLines('read', result(text), {}, true).length, 40)
 })
 
 test('bash result keeps the newest lines', () => {
   const text = Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join('\n')
   const lines = resultLines('bash', result(text))
-  assert.match(lines[0] ?? '', /16 earlier lines/)
+  assert.match(lines[0] ?? '', /35 earlier lines/)
+  assert.equal(lines.length, 6)
   assert.equal((lines.at(-1) ?? '').trim(), 'line 40')
 })
 
 test('expanded result shows everything', () => {
   const text = Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join('\n')
-  const lines = resultLines('read', result(text), {}, true)
+  const lines = resultLines('grep', result(text), {}, true)
   assert.equal(lines.length, 40)
 })
 
 test('empty partial result shows a running line', () => {
-  assert.deepEqual(resultLines('read', result(''), { isPartial: true }), ['running\u2026'])
+  assert.deepEqual(resultLines('bash', result(''), { isPartial: true }), ['running\u2026'])
   assert.deepEqual(resultLines('read', result('')), [])
 })
 
@@ -204,7 +216,7 @@ test('truncation notes come from tool details', () => {
   const truncated = result('body', {
     details: { truncation: { truncated: true, outputLines: 10, totalLines: 99 } },
   })
-  assert.match(resultLines('read', truncated).at(-1) ?? '', /10 of 99 lines/)
+  assert.match(resultLines('grep', truncated).at(-1) ?? '', /10 of 99 lines/)
 
   const bash = result('body', { details: { fullOutputPath: '/tmp/out.log' } })
   assert.match(resultLines('bash', bash).at(-1) ?? '', /full output: \/tmp\/out\.log/)
@@ -272,7 +284,7 @@ test('diff rows collapse with an elision line', () => {
     hint: 'ctrl+o to expand',
   })
   assertWidth(lines, 80)
-  assert.match(lines.at(-1) ?? '', /\+36 lines/)
+  assert.match(lines.at(-1) ?? '', /\+52 lines/)
 })
 
 test('diff rendering never exceeds the width', () => {

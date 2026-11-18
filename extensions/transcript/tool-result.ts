@@ -13,6 +13,9 @@ import { parseDisplayDiff, renderDiff } from './diff.ts'
 /** Tools whose interesting output is at the end. */
 const TAIL_TOOLS: ReadonlySet<string> = new Set(['bash', 'powershell'])
 
+/** pi's own shell preview length, kept so the default density matches. */
+const SHELL_PREVIEW_LINES = 5
+
 function record(value: unknown): Readonly<Record<string, unknown>> {
   return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {}
 }
@@ -64,6 +67,12 @@ export class ToolResultCard implements Component {
     const diff = this.#toolName === 'edit' ? str(details.diff) : null
     if (diff !== null && diff.length > 0) return this.#renderDiff(diff, width)
 
+    // A collapsed read is just its header, as in pi: file bodies stay out of
+    // the transcript until the row is expanded.
+    if (this.#toolName === 'read' && !this.#options.expanded && !this.#context.isError) {
+      return []
+    }
+
     const text = toolResultText(this.#result, this.#context.showImages)
     if (text.length === 0) {
       return this.#options.isPartial
@@ -95,7 +104,9 @@ export class ToolResultCard implements Component {
     const all = trimTrailingBlank(text.split(/\r?\n/))
     const limit = this.#options.expanded
       ? all.length
-      : Math.max(1, this.#config.collapsedLines)
+      : tail
+        ? Math.min(SHELL_PREVIEW_LINES, Math.max(1, this.#config.collapsedLines))
+        : Math.max(1, this.#config.collapsedLines)
     const hidden = Math.max(0, all.length - limit)
     const shown = tail ? all.slice(hidden) : all.slice(0, limit)
 

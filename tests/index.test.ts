@@ -30,7 +30,6 @@ function harness(): {
   const markdownTransformers: unknown[] = []
   const toolRenderers: unknown[] = []
   const customCalls: unknown[] = []
-  let toolsExpanded = false
   const notifications: string[] = []
   const ui = {
     theme: { fg: (_color: string, text: string) => text, bold: (text: string) => text },
@@ -41,12 +40,7 @@ function harness(): {
     setWorkingMessage: () => {},
     setWorkingIndicator: () => {},
     setWorkingVisible: () => {},
-    setStatus: () => {},
     notify: (message: string) => notifications.push(message),
-    getToolsExpanded: () => toolsExpanded,
-    setToolsExpanded: (value: boolean) => {
-      toolsExpanded = value
-    },
     custom: async (factory: unknown, options: unknown) => {
       customCalls.push({ factory, options })
       return { dirty: false }

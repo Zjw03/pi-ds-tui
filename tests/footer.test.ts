@@ -21,7 +21,6 @@ const snapshot: FooterSnapshot = {
   model: 'model-x',
   provider: 'provider-a',
   thinking: 'high',
-  mode: 'tui',
   contextPercent: 42,
   contextWindow: 200_000,
   contextTokens: 84_000,
@@ -107,7 +106,6 @@ test('snapshotFooter sums usage entries and reads context/model/git', () => {
   const cache = { entryCount: -1, totalTokens: 0, cacheTokens: 0, cost: 0 }
   const ctx = {
     cwd: '/work',
-    mode: 'tui',
     model: { id: 'model-x', provider: 'provider-a' },
     thinkingLevel: 'high',
     getContextUsage: () => ({ percent: 42, contextWindow: 200_000, tokens: 84_000 }),

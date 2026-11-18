@@ -20,6 +20,9 @@ type Args = Readonly<Record<string, unknown>>
 /** Content previews stop here; the full file is one `cat` away. */
 const MAX_PREVIEW_LINES = 400
 
+/** Collapsed write preview length, matching pi's built-in card. */
+const WRITE_PREVIEW_LINES = 10
+
 function record(value: unknown): Args {
   return typeof value === 'object' && value !== null ? (value as Args) : {}
 }
@@ -121,12 +124,21 @@ export function describeCall(
   }
 }
 
-function contentPreview(content: string, width: number, theme: CardTheme): string[] {
+function contentPreview(
+  content: string,
+  width: number,
+  theme: CardTheme,
+  limit: number,
+  hint: string,
+): string[] {
   const raw = content.split(/\r?\n/)
-  const shown = raw.slice(0, MAX_PREVIEW_LINES)
+  while (raw.length > 0 && (raw.at(-1) ?? '').length === 0) raw.pop()
+  const shown = raw.slice(0, limit)
   const lines = shown.map((line) => fitLine(theme.fg('toolOutput', line), width))
   const hidden = raw.length - shown.length
-  if (hidden > 0) lines.push(fitLine(theme.fg('dim', `\u2026 +${hidden} lines`), width))
+  if (hidden > 0) {
+    lines.push(fitLine(theme.fg('dim', `\u2026 +${hidden} lines (${hint})`), width))
+  }
   return lines
 }
 
@@ -157,10 +169,12 @@ export class ToolCallCard implements Component {
     )
     const lines = [header]
 
-    if (this.#toolName === 'write' && this.#context.expanded) {
+    if (this.#toolName === 'write') {
       const content = str(record(this.#args).content)
       if (content !== null && content.length > 0) {
-        lines.push(...contentPreview(content, width, this.#theme))
+        const limit = this.#context.expanded ? MAX_PREVIEW_LINES : WRITE_PREVIEW_LINES
+        const hint = this.#context.keyHint('app.tools.expand', 'to expand')
+        lines.push(...contentPreview(content, width, this.#theme, limit, hint))
       }
     }
 

@@ -14,7 +14,6 @@ import { createMarkdownTransformer, MARKDOWN_MESSAGE_TYPES } from './transcript/
 import { installEditor } from './ui/editor.ts'
 import { createFooterFactory } from './ui/footer.ts'
 import { createHeaderFactory, DEFAULT_TAGLINE, pickHeaderTip, type HeaderInfo } from './ui/header.ts'
-import { clearWorkingStatus, setWorkingStatus } from './ui/status.ts'
 import { VERSION } from './version.ts'
 import { applyWorking } from './ui/working.ts'
 
@@ -87,7 +86,6 @@ export default function piDsTui(pi: ExtensionAPI): void {
         `editor: ${config.editor.enabled}`,
         `working: ${config.working.enabled}`,
         `markdown: ${config.markdown.enabled} (mermaid=${config.markdown.mermaid})`,
-        `status: ${config.status.enabled}`,
         `toolCards: ${config.toolCards.enabled}`,
         `warnings: ${loaded.warnings.length}`,
       ]
@@ -132,13 +130,6 @@ export default function piDsTui(pi: ExtensionAPI): void {
     pi.on('session_start', (_event, ctx) => applyWorking(ctx.ui, config.working))
   }
 
-  if (config.status.enabled) {
-    pi.on('session_start', (_event, ctx) => clearWorkingStatus(ctx.ui))
-    pi.on('agent_start', (_event, ctx) => setWorkingStatus(ctx.ui))
-    pi.on('agent_settled', (_event, ctx) => clearWorkingStatus(ctx.ui))
-    pi.on('session_shutdown', (_event, ctx) => clearWorkingStatus(ctx.ui))
-  }
-
   if (config.markdown.enabled) {
     pi.registerMarkdownTransformer(createMarkdownTransformer(config.markdown), {
       messageTypes: MARKDOWN_MESSAGE_TYPES,
@@ -147,17 +138,5 @@ export default function piDsTui(pi: ExtensionAPI): void {
 
   if (config.toolCards.enabled) {
     pi.registerToolRenderer(createToolRenderers(config.toolCards))
-    pi.registerCommand('ds-tools', {
-      description: 'Toggle tool output expansion',
-      handler: async (_args, ctx) => {
-        if (!ctx.hasUI) return
-        const expanded = !ctx.ui.getToolsExpanded()
-        ctx.ui.setToolsExpanded(expanded)
-        ctx.ui.notify(
-          `pi-ds-tui: tool output ${expanded ? 'expanded' : 'collapsed'}`,
-          'info',
-        )
-      },
-    })
   }
 }

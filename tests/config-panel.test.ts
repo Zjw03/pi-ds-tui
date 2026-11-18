@@ -32,7 +32,7 @@ test('items fall back to defaults', () => {
   assert.equal(byId.get('header.logo')?.currentValue, 'on')
   assert.equal(byId.get('mouse.enabled')?.currentValue, 'off')
   assert.equal(byId.get('toolCards.diffMode')?.currentValue, 'auto')
-  assert.equal(byId.get('toolCards.collapsedLines')?.currentValue, '24')
+  assert.equal(byId.get('toolCards.collapsedLines')?.currentValue, '8')
   assert.equal(items.length, CONFIG_FIELDS.length)
 })
 

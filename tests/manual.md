@@ -15,11 +15,11 @@
 
 - [ ] `pi -e .`（默认 fullscreen）能启动，无启动报错。
 - [ ] `pi -e . --tui-mode regular` 能启动。
-- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/header/editor/working/status/markdown/toolCards 开关与 warnings。
+- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/header/editor/working/markdown/toolCards 开关与 warnings。
 
 ## Footer
 
-- [ ] 底部出现三行：cwd；context/tokens/cache/cost/git/mode/effort + model；扩展状态。
+- [ ] 底部出现三行：cwd；context/tokens/cache/cost/git/effort + model；扩展状态。
 - [ ] 宽度 120 时所有芯片可见。
 - [ ] 宽度 40 时只保留 context 与 model，且不换行、不溢出。
 - [ ] 中文/emoji cwd 不破坏对齐。
@@ -40,15 +40,16 @@
 ### Call
 
 - [ ] `read` 显示 `路径:offset+limit`。
-- [ ] `write` 显示 `+N lines`；展开时在标题下显示内容预览。
+- [ ] `write` 显示 `+N lines`；折叠时预览前 10 行，展开后显示全部。
 - [ ] `edit` 显示 `N edits`。
 - [ ] `bash` / `powershell` 超长命令保留尾部。
 - [ ] `grep` / `find` 显示 pattern 与 `in path`；`ls` 显示目录。
 
 ### Result
 
-- [ ] 超过 `toolCards.collapsedLines` 时折叠，并显示 `… +N lines (ctrl+o to expand)`。
-- [ ] `bash` 折叠时保留最后几行，提示显示 `… N earlier lines`。
+- [ ] `read` 折叠时只留标题行，不刷屏（与 pi 一致）。
+- [ ] `bash` 折叠时保留最后 5 行，提示显示 `… N earlier lines`。
+- [ ] 其他工具折叠时为 `toolCards.collapsedLines`（默认 8）行，并显示 `… +N lines (ctrl+o to expand)`。
 - [ ] `ctrl+o` 一次性展开/收起（由 pi 处理）。
 - [ ] 空的流式结果显示 `running…`；有内容后不闪。
 - [ ] 错误结果正文用 error 颜色；`✗` 在标题行。
@@ -61,12 +62,7 @@
 - [ ] `toolCards.diffMode: "unified"` 时即使宽屏也单栏；`"split"` 时强制双栏。
 - [ ] 超过折叠行数时末尾显示 `… +N lines`。
 - [ ] 中文/emoji 行不破坏对齐。
-
-### 全局展开
-
-- [ ] `/ds-tools` 在所有卡片展开/收起之间切换。
-- [ ] 切换后已渲染的卡片同步更新。
-- [ ] 连续切换 5 次不残留状态。
+- [ ] `ctrl+o` 作用在所有卡片上，行为与 pi 自带的一致。
 
 ## M6 设置面板（`/ds-config`）
 
@@ -123,13 +119,6 @@
 - [ ] 流式开始/结束没有重复行。
 - [ ] `working.message` 为 null 时显示 pi 默认文案。
 - [ ] `working.enabled: false` 后恢复默认。
-
-## M2 Status line
-
-- [ ] agent 运行时 footer 出现 `working`（key `pi-ds-tui`）。
-- [ ] `agent_settled` 后状态清除，不残留。
-- [ ] 关闭 `status.enabled` 后不再写入状态。
-- [ ] 关闭自定义 footer 时，pi 内置 footer 也能看到该状态。
 
 ## M3 Widgets（已移除）
 

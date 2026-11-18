@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M5 complete, `/ds-config` added**. The package ships a dsh-style footer, header, editor prefix, working row, status line, Markdown dialect rendering, tool cards and an in-terminal settings panel. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
+> Status: **M5 complete, `/ds-config` added**. The package ships a dsh-style footer, header, editor prefix, working row, Markdown dialect rendering, tool cards and an in-terminal settings panel. Permission prompts, the todo panel and status-line reporting are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
 
 ## Install
 
@@ -32,18 +32,17 @@ Run `/ds-config` to edit it in place. It opens in the editor area like `/setting
   "enabled": true,
   "footer": {
     "enabled": true,
-    "chips": ["model", "context", "tokens", "cache", "cost", "git", "mode", "effort", "cwd"],
+    "chips": ["model", "context", "tokens", "cache", "cost", "git", "effort", "cwd"],
     "narrowWidth": 60
   },
   "header": { "enabled": true, "logo": true },
   "editor": { "enabled": true, "prefix": "❯" },
   "working": { "enabled": true, "message": null },
   "markdown": { "enabled": true, "mermaid": true },
-  "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 24 },
+  "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 8 },
   "autocomplete": { "enabled": true },
   "messages": { "enabled": true },
   "entries": { "enabled": true },
-  "status": { "enabled": true },
   "mouse": { "enabled": false }
 }
 ```
@@ -54,11 +53,10 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 
 | Feature | Entry | Config switch |
 | --- | --- | --- |
-| dsh-style footer: cwd, context, tokens, cache, cost, git, mode, effort, model | automatic | `footer.enabled` |
+| dsh-style footer: cwd, context, tokens, cache, cost, git, effort, model | automatic | `footer.enabled` |
 | Header: DeepSeek whale + `DEEPSEEK`/`PI` block wordmark + model/effort + cwd + tip + tagline | automatic | `header.enabled` / `header.logo` |
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
-| Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
 | Tool cards for `read`, `write`, `edit`, `bash`, `powershell`, `grep`, `find`, `ls`: status dot, one-line argument, duration, collapse/expand | automatic | `toolCards.enabled` |
 | Edit diffs: unified below 120 columns, two columns above; colors from `toolDiff*` tokens | automatic | `toolCards.diffMode` |
 | Other tools (MCP, subagents, plugins) keep their own renderers | automatic | — |
@@ -67,7 +65,9 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Config status | `/ds-ui` | always available |
 
 The footer drops low-priority chips on narrow terminals in this order:
-cost → cache → tokens → git → effort → mode. Context and the model stay.
+cost → cache → tokens → git → effort. Context and the model stay.
+
+A collapsed `read` row shows only its header, and a collapsed shell row keeps its last five lines, matching pi's own density. `ctrl+o` expands every tool result; there is no separate command.
 
 Standard `mermaid` fences are left to Pi's built-in renderer. Dialect fences are rendered with the same `lovely-mermaid` engine Pi uses, because Pi's built-in transformer runs before extension transformers.
 
@@ -77,7 +77,6 @@ Standard `mermaid` fences are left to Pi's built-in renderer. Dialect fences are
 | --- | --- |
 | `/ds-ui` | Show config path, feature switches, and warnings |
 | `/ds-header` | Re-apply the pi-ds-tui header |
-| `/ds-tools` | Expand or collapse every tool result |
 | `/ds-config` | Edit `pi-ds-tui.json` inline, like `/settings`; saves on change and reloads |
 
 ## Troubleshooting
@@ -140,7 +139,6 @@ extensions/
     bigfont.ts        5-row DEEPSEEK/PI block wordmark
     editor.ts         CustomEditor subclass with the prompt glyph
     working.ts        working message/indicator
-    status.ts         extension status key
   version.ts          header version
   transcript/
     tool-card.ts      registerToolRenderer resolver (claims the built-in tools)
@@ -165,7 +163,6 @@ tests/
   header.test.ts
   editor.test.ts
   working.test.ts
-  status.test.ts
   tool-card.test.ts
   config-panel.test.ts
   markdown.test.ts

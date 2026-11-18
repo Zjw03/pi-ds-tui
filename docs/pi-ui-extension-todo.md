@@ -41,9 +41,9 @@
 - [x] T2.1 Header
 - [x] T2.2 Editor 外观
 - [x] T2.3 Working row
-- [x] T2.4 状态行接入
+- [x] T2.4 状态行接入（已移除：pi 已有运行指示）
 
-> M2 完成记录：`npm run verify` 通过（71 tests）；header（鲸鱼 + DEEPSEEK/PI 大字 + 模型/effort + cwd + tip + 欢迎语）、editor 前缀、working row、状态行已接入；header 在 `resources_discover` 后重新夺回槽位，`/ds-header` 可手动重放；真机清单见 `tests/manual.md`。
+> M2 完成记录：`npm run verify` 通过（71 tests）；header（鲸鱼 + DEEPSEEK/PI 大字 + 模型/effort + cwd + tip + 欢迎语）、editor 前缀、working row 已接入；状态行因与 pi 运行指示重复而移除；header 在 `resources_discover` 后重新夺回槽位，`/ds-header` 可手动重放；真机清单见 `tests/manual.md`。
 
 **M3 Widgets（已移除）**
 - [x] T3.1 Widget above editor（已移除：rpiv-todo 提供）
@@ -69,7 +69,7 @@
 - [x] T5.6 全局展开状态
 - [x] T5.7 特殊工具
 
-> M5 完成记录：`npm run verify` 通过（93 tests）；接管 8 个内置文件/外壳工具，其他工具交给 `next()` 与 pi；diff 按宽度自动单/双栏；`/ds-tools` 一键展开。
+> M5 完成记录：`npm run verify` 通过；接管 8 个内置文件/外壳工具，其他工具交给 `next()` 与 pi；diff 按宽度自动单/双栏；折叠密度对齐 pi（read 0 行、bash 5 行、其他 8 行）；展开走 pi 自带的 `ctrl+o`。
 
 **M6 Overlays**
 - [x] T6.1 Overlay 基类（不做：只有一个面板）
@@ -346,17 +346,13 @@ tests/
 - 完成：流式开始/结束无重复行；关闭后恢复默认。
 - 验证：发一条长回答，观察开始与结束。
 
-### T2.4 状态行接入
+### T2.4 状态行接入（已移除）
 
-- 依赖：T1.1
-- 文件：`extensions/ui/footer.ts`
-- API：`ctx.ui.setStatus`
-- 步骤：
-  1. 用一个稳定 key 写活动状态。
-  2. 自定义 footer 读取 `footerData.getExtensionStatuses()`。
-  3. 清除时传 `undefined`。
-- 完成：不残留旧状态；多个 key 按字母排序。
-- 验证：开关两次，检查 footer。
+> pi 在 agent 运行时已经显示 `WorkingStatusIndicator`（spinner + 文案），再写一个 `working` 状态是重复信号。
+> `extensions/ui/status.ts` 与 `status` 配置项已删除。
+
+- 原 API：`ctx.ui.setStatus`
+- 原验证：`tests/status.test.ts`（已删除）
 
 ---
 
@@ -476,14 +472,10 @@ tests/
 > 已确认不可行：`registerToolRenderer` 只决定单个 tool call 的渲染，无法把相邻调用合并成一个组件。
 > 要分组必须接管整个 transcript，而那是公开 API 不提供的能力（同侧栏）。
 
-### T5.6 全局展开状态
+### T5.6 全局展开状态（已移除）
 
-- 依赖：T5.1
-- 文件：`extensions/transcript/tool-card.ts`、`extensions/index.ts`
-- API：`ctx.ui.setToolsExpanded`、`getToolsExpanded`
-- 实现：`/ds-tools` 读取当前状态并取反，pi 负责重绘所有卡片。
-- 完成：一次命令展开/收起全部；`toolCards.enabled: false` 时不注册。
-- 验证：`tests/index.test.ts` 命令存在性与切换。
+> pi 自带 `ctrl+o`（`app.tools.expand`）切换全部工具输出，`/ds-tools` 只是同一动作的第二个入口，已删除。
+> 卡片本身仍从 `options.expanded` / `context.expanded` 读取展开态。
 
 ### T5.7 特殊工具
 
