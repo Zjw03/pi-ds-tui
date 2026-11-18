@@ -57,6 +57,7 @@ test('wide header shows the whale, block wordmark and info column', () => {
   assert.ok(lines.length >= 13)
   assert.ok(lines.some((line) => line.includes('\u2580') || line.includes('\u2584')))
   assert.ok(lines.some((line) => line.includes('\u2588') || line.includes('\u2584')))
+  assert.ok(lines.join('').includes('\u001b[38;2;78;111;255m'))
   const text = lines.join('\n')
   assert.ok(text.includes('model-x'))
   assert.ok(text.includes('/work/project'))

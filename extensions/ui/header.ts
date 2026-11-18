@@ -11,7 +11,7 @@ import type { Component, TUI } from '@earendil-works/pi-tui'
 import type { Theme } from '@earendil-works/pi-coding-agent'
 import { bigWordWidth, renderBigWord, type BigFontSize } from './bigfont.ts'
 import { fitLine, padRight, visibleWidth } from './text.ts'
-import { renderWhaleRows, WHALE_ROWS, WHALE_WIDTH } from './whale.ts'
+import { renderWhaleRows, whaleBlue, WHALE_ROWS, WHALE_WIDTH } from './whale.ts'
 
 export interface HeaderInfo {
   readonly name: string
@@ -75,7 +75,7 @@ function renderSplash(info: HeaderInfo, width: number, theme: HeaderTheme): stri
     rows.push(fitLine(`${' '.repeat(TEXT_INDENT)}${padRight(line, textWidth)}`, width))
   }
 
-  const tagline = renderTagline(info, WHALE_WIDTH, theme)
+  const tagline = renderTagline(info, WHALE_WIDTH)
   if (tagline !== null) rows.push(tagline)
   return rows
 }
@@ -85,7 +85,7 @@ function renderWhaleOnly(info: HeaderInfo, width: number, theme: HeaderTheme): s
   const rows = renderWhaleRows().map((row) => `${' '.repeat(pad)}${row}`)
   rows.push(fitLine(titleLine(info, theme), width))
   for (const line of renderInfoLines(info, width, theme, true)) rows.push(fitLine(line, width))
-  const tagline = renderTagline(info, width, theme)
+  const tagline = renderTagline(info, width)
   if (tagline !== null) rows.push(tagline)
   return rows
 }
@@ -96,25 +96,25 @@ function renderTextHeader(info: HeaderInfo, width: number, theme: HeaderTheme): 
   const lines = [fitLine(titleLine(info, theme), width)]
   if (width >= 40) lines.push(fitLine(theme.fg('dim', info.hints), width))
   for (const line of renderInfoLines(info, width, theme, width >= 40)) lines.push(fitLine(line, width))
-  const tagline = renderTagline(info, width, theme)
+  const tagline = renderTagline(info, width)
   if (tagline !== null) lines.push(tagline)
   return lines
 }
 
 function renderSplashText(info: HeaderInfo, width: number, theme: HeaderTheme): string[] {
   const lines = Array.from({ length: WHALE_ROWS }, () => '')
-  lines[0] = `${theme.fg('accent', '\u2726')} ${theme.bold(theme.fg('accent', info.name))}  ${theme.fg('dim', `v${info.version}`)}`
+  lines[0] = `${whaleBlue('\u2726')} ${whaleBlue(theme.bold(info.name))}  ${theme.fg('dim', `v${info.version}`)}`
 
   const size = pickBigFont(width)
   if (size === null) {
-    lines[2] = theme.bold(theme.fg('accent', DEEPSEEK))
-    lines[4] = theme.bold(theme.fg('accent', HARNESS))
+    lines[2] = whaleBlue(theme.bold(DEEPSEEK))
+    lines[4] = whaleBlue(theme.bold(HARNESS))
   } else {
     const deepseek = renderBigWord(DEEPSEEK, size)
     const harness = renderBigWord(HARNESS, size)
     for (let row = 0; row < 5; row += 1) {
-      lines[1 + row] = theme.fg('accent', deepseek[row] ?? '')
-      lines[7 + row] = theme.fg('accent', harness[row] ?? '')
+      lines[1 + row] = whaleBlue(deepseek[row] ?? '')
+      lines[7 + row] = whaleBlue(harness[row] ?? '')
     }
   }
 
@@ -147,15 +147,15 @@ function renderInfoLines(
   return lines.map((line) => fitLine(line, width))
 }
 
-function renderTagline(info: HeaderInfo, width: number, theme: HeaderTheme): string | null {
+function renderTagline(info: HeaderInfo, width: number): string | null {
   if (info.tagline === undefined || info.tagline.length === 0) return null
-  const text = fitLine(theme.fg('dim', info.tagline), width)
+  const text = fitLine(whaleBlue(info.tagline), width)
   const pad = Math.max(0, Math.floor((width - visibleWidth(text)) / 2))
   return `${' '.repeat(pad)}${text}`
 }
 
 function titleLine(info: HeaderInfo, theme: HeaderTheme): string {
-  return `${theme.bold(theme.fg('accent', info.name))} ${theme.fg('dim', info.version)}`
+  return `${whaleBlue(theme.bold(info.name))} ${theme.fg('dim', info.version)}`
 }
 
 function capitalize(text: string): string {

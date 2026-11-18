@@ -51,6 +51,11 @@ const SPRITE = [
 export const WHALE_WIDTH = 40
 export const WHALE_ROWS = Math.ceil(SPRITE.length / 2)
 
+/** DeepSeek body blue, used for the header wordmark so it matches the whale. */
+export function whaleBlue(text: string): string {
+  return `\x1b[38;2;78;111;255m${text}\x1b[39m`
+}
+
 function fg(rgb: Rgb): string {
   return `\x1b[38;2;${rgb[0]};${rgb[1]};${rgb[2]}m`
 }
@@ -68,18 +73,29 @@ export function renderWhaleRows(): string[] {
   const rows: string[] = []
   for (let y = 0; y < SPRITE.length; y += 2) {
     let line = ''
+    let current = ''
     for (let x = 0; x < WHALE_WIDTH; x += 1) {
       const upper = pixel(x, y)
       const lower = pixel(x, y + 1)
+      let seq = ''
+      let char = ' '
       if (upper !== undefined && lower !== undefined) {
-        line += `${fg(upper)}${bg(lower)}\u2580`
+        seq = `${fg(upper)}${bg(lower)}`
+        char = '\u2580'
       } else if (upper !== undefined) {
-        line += `${fg(upper)}${BG_DEFAULT}\u2580`
+        seq = `${fg(upper)}${BG_DEFAULT}`
+        char = '\u2580'
       } else if (lower !== undefined) {
-        line += `${fg(lower)}${BG_DEFAULT}\u2584`
-      } else {
-        line += ' '
+        seq = `${fg(lower)}${BG_DEFAULT}`
+        char = '\u2584'
       }
+      // Transparent cells must actively reset the previous cell's background;
+      // otherwise the last colored cell paints a block into the empty area.
+      if (seq !== current) {
+        line += seq === '' ? RESET : seq
+        current = seq
+      }
+      line += char
     }
     rows.push(`${line}${RESET}`)
   }
