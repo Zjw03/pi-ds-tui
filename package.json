@@ -1,0 +1,55 @@
+{
+  "name": "pi-ds-tui",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "dsh-tui style UI for pi, built only on pi public extension APIs.",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pi-coding-agent",
+    "tui",
+    "dsh-tui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Zjw03/pi-ds-tui.git"
+  },
+  "files": [
+    "extensions",
+    "themes",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/index.ts"
+    ],
+    "themes": [
+      "./themes/dsh-dark.json",
+      "./themes/dsh-light.json"
+    ]
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/**/*.test.ts",
+    "check:public-api": "node scripts/check-public-api.mjs",
+    "check:themes": "node scripts/check-themes.mjs",
+    "verify": "npm run typecheck && npm test && npm run check:public-api && npm run check:themes"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.5.2",
+    "@earendil-works/pi-tui": "1.5.2",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}
