@@ -30,25 +30,47 @@ const snapshot: FooterSnapshot = {
   statuses: ['building'],
 }
 
-test('wide footer shows cwd and chips, a full-width bar, then model and statuses', () => {
+test('wide footer puts cwd, branch, chips and model on the line above the bar', () => {
   const lines = renderFooter(snapshot, 120, DEFAULT_CONFIG.footer, theme)
   assertWidth(lines, 120)
-  assert.equal(lines.length, 3)
 
-  const [status, bar, model] = lines as [string, string, string]
-  assert.ok(status.includes('/home/user/projects/pi-ds-tui'))
-  assert.ok(status.includes('\u03a3 12k'))
-  assert.ok(status.includes('cache 8.1k'))
-  assert.ok(status.includes('$0.0123'))
-  assert.ok(status.includes('git:main'))
-  assert.ok(status.includes('think:high'))
+  const header = lines[0] ?? ''
+  assert.ok(header.includes('/home/user/projects/pi-ds-tui'))
+  assert.ok(header.includes('\u2387 main'))
+  assert.ok(header.includes('\u03a3 12k'))
+  assert.ok(header.includes('cache 8.1k'))
+  assert.ok(header.includes('$0.0123'))
+  assert.ok(header.trimEnd().endsWith('model-x \u00b7 high'))
 
+  const bar = lines[1] ?? ''
   assert.ok(bar.includes('42% \u00b7 200k \u00b7 CH 87%'))
   assert.ok(bar.includes('\u2588'))
   assert.ok(bar.includes('\u2591'))
 
-  assert.ok(model.includes('model-x'))
-  assert.ok(model.includes('building'))
+  assert.equal(lines[2], 'building')
+  assert.equal(lines.length, 3)
+})
+
+test('the branch icon is omitted when there is no branch', () => {
+  const lines = renderFooter(
+    { ...snapshot, gitBranch: null },
+    120,
+    DEFAULT_CONFIG.footer,
+    theme,
+  )
+  assert.ok(!lines[0]?.includes('\u2387'))
+})
+
+test('thinking is dropped when `effort` is not selected', () => {
+  const lines = renderFooter(
+    snapshot,
+    120,
+    { ...DEFAULT_CONFIG.footer, chips: ['model', 'context', 'cwd', 'git'] },
+    theme,
+  )
+  const header = lines[0] ?? ''
+  assert.ok(header.includes('model-x'))
+  assert.ok(!header.includes('high'))
 })
 
 test('the bar fills the line and grows with the width', () => {
@@ -106,7 +128,12 @@ test('narrow footer drops chips but keeps the bar and model', () => {
 
   const tighter = renderFooter(snapshot, 30, DEFAULT_CONFIG.footer, theme)
   assertWidth(tighter, 30)
-  assert.ok(!tighter.join('\n').includes('git:main'))
+  assert.ok(!tighter.join('\n').includes('cache'))
+  assert.ok(tighter[0]?.includes('\u2387 main'))
+
+  const narrowest = renderFooter(snapshot, 24, DEFAULT_CONFIG.footer, theme)
+  assertWidth(narrowest, 24)
+  assert.ok(!narrowest.join('\n').includes('\u2387'))
 })
 
 test('very narrow footer still respects the width', () => {
@@ -146,6 +173,7 @@ test('cwd can be turned off through the chip list', () => {
   )
   assert.ok(!lines.join('\n').includes('/home/user/projects/pi-ds-tui'))
   assert.ok(lines.some((line) => line.includes('\u2591')))
+  assert.ok(lines[0]?.includes('model-x'))
 })
 
 test('formatTokens follows the pi compact format', () => {

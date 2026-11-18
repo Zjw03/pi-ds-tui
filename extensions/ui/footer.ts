@@ -74,7 +74,7 @@ export interface FooterStatsCache {
   cost: number
 }
 
-const DROP_ORDER = ['cost', 'cache', 'tokens', 'git', 'effort'] as const
+const DROP_ORDER = ['cost', 'cache', 'tokens'] as const
 
 export function snapshotFooter(
   ctx: FooterContextLike,
@@ -119,8 +119,9 @@ export function renderFooter(
     if (bar.length > 0) lines.push(bar)
   }
 
-  const model = layoutModelLine(snapshot, width, theme)
-  if (model.length > 0) lines.push(model)
+  if (snapshot.statuses.length > 0) {
+    lines.push(theme.fg('dim', truncateMiddle(snapshot.statuses.join(' \u00b7 '), width)))
+  }
 
   return lines
 }
@@ -128,6 +129,9 @@ export function renderFooter(
 /** Fill and track glyphs for the context meter. */
 export const BAR_FILL = '\u2588'
 export const BAR_TRACK = '\u2591'
+
+/** Branch marker shown before the git branch name (`dsh-tui` uses the same). */
+export const BRANCH_GLYPH = '\u2387'
 
 type ColorToken = string
 
@@ -184,37 +188,60 @@ function layoutStatusLine(
   theme: FooterTheme,
 ): string {
   const showCwd = config.chips.includes('cwd')
-  const kept = buildChips(snapshot, config.chips)
-  const chipsWidth = (): number => (kept.length === 0 ? 0 : visibleWidth(joinChips(kept, theme, snapshot)))
-  const MIN_CWD = 12
+  const chips = buildChips(snapshot, config.chips)
+  let keepBranch =
+    config.chips.includes('git') &&
+    snapshot.gitBranch !== null &&
+    snapshot.gitBranch.length > 0
+  let keepThinking = config.chips.includes('effort')
 
-  while (kept.length > 0 && chipsWidth() + (showCwd ? MIN_CWD + 2 : 0) > width) {
-    const index = dropIndex(kept)
-    if (index < 0) break
-    kept.splice(index, 1)
+  const compose = (): { left: string; right: string } => {
+    const right = modelLabel(snapshot, theme, keepThinking)
+    const chipText = joinChips(chips, theme, snapshot)
+    const branch = keepBranch
+      ? theme.fg('muted', `${BRANCH_GLYPH} ${snapshot.gitBranch ?? ''}`)
+      : ''
+    const reserved =
+      (visibleWidth(branch) > 0 ? visibleWidth(branch) + 2 : 0) +
+      (chipText.length > 0 ? visibleWidth(chipText) + 2 : 0) +
+      (right.length > 0 ? visibleWidth(right) + 2 : 0)
+    const cwd = showCwd
+      ? theme.fg('dim', truncateMiddle(snapshot.cwd, Math.max(4, width - reserved)))
+      : ''
+    return { left: [cwd, branch, chipText].filter((part) => part.length > 0).join('  '), right }
   }
 
-  const chips = joinChips(kept, theme, snapshot)
-  if (!showCwd) return chips.length > 0 ? fitLine(chips, width) : ''
+  let view = compose()
+  const overflow = (): boolean =>
+    visibleWidth(view.left) + (view.right.length > 0 ? visibleWidth(view.right) + 2 : 0) > width
 
-  const cwdBudget = width - (chips.length > 0 ? visibleWidth(chips) + 2 : 0)
-  const cwd = theme.fg('dim', truncateMiddle(snapshot.cwd, Math.max(1, cwdBudget)))
-  const line = chips.length > 0 ? `${cwd}  ${chips}` : cwd
-  return fitLine(line, width)
-}
-
-function layoutModelLine(snapshot: FooterSnapshot, width: number, theme: FooterTheme): string {
-  const model = modelLabel(snapshot, theme)
-  const modelWidth = visibleWidth(model)
-  const status = snapshot.statuses.join(' \u00b7 ')
-  if (status.length === 0) {
-    return `${padRight('', Math.max(0, width - modelWidth))}${fitLine(model, width)}`
+  while (overflow()) {
+    const index = dropIndex(chips)
+    if (index >= 0) {
+      chips.splice(index, 1)
+      view = compose()
+      continue
+    }
+    if (keepBranch) {
+      keepBranch = false
+      view = compose()
+      continue
+    }
+    if (keepThinking) {
+      keepThinking = false
+      view = compose()
+      continue
+    }
+    break
   }
 
-  const statusWidth = width - modelWidth - 2
-  if (statusWidth <= 0) return fitLine(model, width)
-  const left = padRight(theme.fg('dim', truncateMiddle(status, statusWidth)), statusWidth)
-  return fitLine(`${left}  ${model}`, width)
+  const rightWidth = visibleWidth(view.right)
+  if (view.right.length === 0) return fitLine(view.left, width)
+  if (view.left.length === 0) {
+    return `${padRight('', Math.max(0, width - rightWidth))}${fitLine(view.right, width)}`
+  }
+  const gap = Math.max(2, width - visibleWidth(view.left) - rightWidth)
+  return fitLine(`${view.left}${' '.repeat(gap)}${view.right}`, width)
 }
 
 export function formatTokens(count: number): string {
@@ -239,8 +266,16 @@ interface Chip {
 function buildChips(snapshot: FooterSnapshot, order: readonly string[]): Chip[] {
   const chips: Chip[] = []
   for (const key of order) {
-    // `cwd`, `model` and `context` have their own rows.
-    if (key === 'model' || key === 'cwd' || key === 'context') continue
+    // `cwd`, `model`, `context`, `git` and `effort` render elsewhere.
+    if (
+      key === 'model' ||
+      key === 'cwd' ||
+      key === 'context' ||
+      key === 'git' ||
+      key === 'effort'
+    ) {
+      continue
+    }
     const text = chipText(key, snapshot)
     if (text !== null) chips.push({ key, text })
   }
@@ -255,23 +290,15 @@ function chipText(key: string, snapshot: FooterSnapshot): string | null {
       return snapshot.cacheTokens > 0 ? `cache ${formatTokens(snapshot.cacheTokens)}` : null
     case 'cost':
       return snapshot.cost > 0 ? formatCost(snapshot.cost) : null
-    case 'git':
-      return snapshot.gitBranch !== null && snapshot.gitBranch.length > 0
-        ? `git:${snapshot.gitBranch}`
-        : null
-    case 'effort':
-      return snapshot.thinking !== null && snapshot.thinking.length > 0
-        ? `think:${snapshot.thinking}`
-        : null
     default:
       return null
   }
 }
 
-function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme): string {
+function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme, includeThinking: boolean): string {
   const model = snapshot.model ?? 'no-model'
   const label = theme.fg('accent', model)
-  if (snapshot.thinking === null || snapshot.thinking.length === 0) return label
+  if (!includeThinking || snapshot.thinking === null || snapshot.thinking.length === 0) return label
   return `${label}${theme.fg('dim', ` \u00b7 ${snapshot.thinking}`)}`
 }
 

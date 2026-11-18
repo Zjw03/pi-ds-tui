@@ -53,7 +53,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 
 | Feature | Entry | Config switch |
 | --- | --- | --- |
-| dsh-style footer: cwd and chips on the first line, a full-width context bar (`42% · 128k · CH 87%`), model and statuses below | automatic | `footer.enabled` |
+| dsh-style footer: cwd, branch and chips with model on the right, then a full-width context bar (`42% · 128k · CH 87%`) | automatic | `footer.enabled` |
 | Header: DeepSeek whale + `DEEPSEEK`/`PI` block wordmark + model/effort + cwd + tip + tagline | automatic | `header.enabled` / `header.logo` |
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
@@ -64,17 +64,19 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Markdown: dialect Mermaid (`statediagram`, `classdiagram`, `erdiagram`, `sequencediagram`) as Unicode art | automatic | `markdown.enabled` / `markdown.mermaid` |
 | Config status | `/ds-ui` | always available |
 
-The footer has three rows:
+The footer has two rows (plus one for extension statuses):
 
 ```text
-~/projects/pi-ds-tui  Σ 35k  cache 28k  $0.04  git:main  think:high
+~/projects/pi-ds-tui  ⎇ main  Σ 35k  cache 28k  $0.04        deepseek-flash · high
 ███████████████████░░░░░░░░░░░░░░░░░░░░░░░ 42% · 128k · CH 87%
-                                             deepseek-flash · high
 ```
 
-The second row is one meter: `█` fill and `░` track spanning the terminal, with the readout right-aligned in the track. Fill and readout turn `warning` from 80% and `error` from 95%. `CH` is the cache-hit rate of the most recent assistant turn (cache reads over the whole prompt).
+- The branch follows the cwd, behind `⎇`, and only appears when the repository has one.
+- `model · thinking` is right-aligned on that same row, above the bar.
+- The bar is one meter: `█` fill and `░` track spanning the terminal, readout right-aligned in the track. Fill and readout turn `warning` from 80% and `error` from 95%.
+- `CH` is the cache-hit rate of the most recent assistant turn (cache reads over the whole prompt).
 
-On narrow terminals the first row drops chips in this order: cost → cache → tokens → git → effort. The bar, the readout and the model stay.
+On narrow terminals the first row drops chips in this order: cost → cache → tokens, then the branch, then the thinking level. The cwd, model and bar stay.
 
 A collapsed `read` row shows only its header, and a collapsed shell row keeps its last five lines, matching pi's own density. `ctrl+o` expands every tool result; there is no separate command.
 
