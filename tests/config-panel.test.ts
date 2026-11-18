@@ -105,25 +105,44 @@ test('missing or malformed files read as an empty draft', () => {
   assert.deepEqual(readConfigObject(join(dir, 'nested', 'deep', 'pi-ds-tui.json')), { enabled: true })
 })
 
-test('the panel renders a title, the list and the path', () => {
+test('the panel renders as a bordered list, like /settings', () => {
   const dir = tempDir()
-  const path = join(dir, 'pi-ds-tui.json')
   const panel = new ConfigPanel({
     theme,
-    path,
+    path: join(dir, 'pi-ds-tui.json'),
     draft: {},
     requestRender: () => {},
     done: () => {},
   })
 
-  for (const width of [44, 60, 80, 120]) {
+  for (const width of [40, 60, 80, 120]) {
     const lines = panel.render(width)
     assertWidth(lines, width, `panel@${width}`)
+    assert.equal(lines[0], '\u2500'.repeat(width))
+    assert.equal(lines.at(-1), '\u2500'.repeat(width))
     const text = lines.join('\n')
-    assert.match(text, /pi-ds-tui settings/)
     assert.match(text, /Tool cards/)
-    assert.match(text, /esc closes/)
+    assert.match(text, /Diff mode/)
   }
+})
+
+test('a failed write shows an error line instead of closing', () => {
+  const dir = tempDir()
+  let closed = false
+  const panel = new ConfigPanel({
+    theme,
+    // A directory cannot be replaced by a file write.
+    path: dir,
+    draft: {},
+    requestRender: () => {},
+    done: () => {
+      closed = true
+    },
+  })
+
+  panel.handleInput('\r')
+  assert.equal(closed, false)
+  assert.match(panel.render(80).join('\n'), /save failed/)
 })
 
 test('toggling the first item writes the file and marks the panel dirty', () => {

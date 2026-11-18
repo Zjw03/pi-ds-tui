@@ -25,7 +25,7 @@ The package is `private` while the UI is under construction. Remove `"private": 
 
 The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defaults; malformed values fall back field by field and show a warning.
 
-Run `/ds-config` to edit it in place: every toggle is written immediately, unknown keys are preserved, and the extension reloads when you close the panel. Type to filter the list, Enter/Space to change a value, `Esc` to close.
+Run `/ds-config` to edit it in place. It opens in the editor area like `/settings`, writes every change immediately, preserves unknown keys, and reloads when you close it. Type to filter the list, Enter/Space to change a value, `Esc` to close.
 
 ```jsonc
 {
@@ -78,7 +78,7 @@ Standard `mermaid` fences are left to Pi's built-in renderer. Dialect fences are
 | `/ds-ui` | Show config path, feature switches, and warnings |
 | `/ds-header` | Re-apply the pi-ds-tui header |
 | `/ds-tools` | Expand or collapse every tool result |
-| `/ds-config` | Edit `pi-ds-tui.json` in a settings overlay; saves on change and reloads |
+| `/ds-config` | Edit `pi-ds-tui.json` inline, like `/settings`; saves on change and reloads |
 
 ## Troubleshooting
 
@@ -127,7 +127,7 @@ Manual smoke tests are in [tests/manual.md](tests/manual.md).
 extensions/
   index.ts            extension entry (/ds-ui, /ds-header)
   config.ts           config schema, defaults, validation, file IO
-  configPanel.ts      /ds-config settings list and overlay layout
+  configPanel.ts      /ds-config settings list (inline, replaces the editor)
   ui/
     theme.ts          theme wrappers
     text.ts           width-safe truncate/wrap/pad

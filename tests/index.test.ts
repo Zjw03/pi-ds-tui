@@ -126,7 +126,7 @@ test('markdown transformer is registered when enabled', () => {
   assert.equal(h.markdownTransformers.length, 1)
 })
 
-test('ds-config opens the settings overlay', async () => {
+test('ds-config opens inline in the editor area, not as an overlay', async () => {
   const h = harness()
   piDsTui(api(h))
   const command = h.commands.get('ds-config') as {
@@ -137,6 +137,6 @@ test('ds-config opens the settings overlay', async () => {
   await command.handler('', h.ctx)
   assert.equal(h.customCalls.length, 1)
 
-  const call = h.customCalls[0] as { options: { overlay?: boolean } }
-  assert.equal(call.options.overlay, true)
+  const call = h.customCalls[0] as { options?: { overlay?: boolean } }
+  assert.equal(call.options?.overlay, undefined)
 })

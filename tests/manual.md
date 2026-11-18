@@ -70,18 +70,20 @@
 
 ## M6 设置面板（`/ds-config`）
 
-- [ ] `/ds-config` 打开居中浮层，标题为 `pi-ds-tui settings`。
+- [ ] `/ds-config` 在 editor 区域直接展开（与 `/settings`、`/model` 一致），不是浮层。
+- [ ] 上下各有一条全宽 `─` 分隔线，宽度随终端变化。
 - [ ] 列表显示 16 项，当前值与文件一致；文件不存在时显示默认值。
 - [ ] 输入字母可过滤；过滤后 Esc 仍能关闭面板。
 - [ ] Enter/Space 循环切换当前项，例如 `on` ↔ `off`。
-- [ ] 切换后立即写入 `~/.pi/agent/pi-ds-tui.json`，底部显示 `saved`。
+- [ ] 切换后立即写入 `~/.pi/agent/pi-ds-tui.json`，无需额外确认。
 - [ ] 文件中未知的 key 与无关字段不被删除。
 - [ ] `diffMode` 在三态间循环；`collapsedLines` 在 8/12/16/24/32/48 间循环。
-- [ ] 关闭面板后自动 reload，新配置生效。
+- [ ] 关闭面板后自动 reload，新配置生效，editor 恢复。
 - [ ] `enabled` 关掉后 reload，只剩 `/ds-ui` 与 `/ds-config`，再用面板改回来可恢复。
 - [ ] 40 列宽度下不溢出；描述行自动换行。
-- [ ] 写入失败（只读目录）时底部显示 `save failed: …`，面板不崩溃。
+- [ ] 写入失败（只读目录）时列表下方显示 `save failed: …`，面板不关、不崩。
 - [ ] Esc 关闭后焦点回到 editor，可直接继续输入。
+- [ ] 与已有 `/model`、`/settings` 面板交替打开时互不残留。
 
 ## 组合开关
 

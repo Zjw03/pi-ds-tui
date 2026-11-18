@@ -8,7 +8,7 @@
  */
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent'
 import { loadConfig, readConfigObject } from './config.ts'
-import { CONFIG_OVERLAY, ConfigPanel } from './configPanel.ts'
+import { ConfigPanel } from './configPanel.ts'
 import { createToolRenderers } from './transcript/tool-card.ts'
 import { createMarkdownTransformer, MARKDOWN_MESSAGE_TYPES } from './transcript/markdown.ts'
 import { installEditor } from './ui/editor.ts'
@@ -55,16 +55,14 @@ function registerConfigCommand(pi: ExtensionAPI): void {
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) return
       const draft = readConfigObject(loaded.path)
-      const result = await ctx.ui.custom<{ dirty: boolean }>(
-        (tui, theme, _keybindings, done) =>
-          new ConfigPanel({
-            theme,
-            path: loaded.path,
-            draft,
-            requestRender: () => tui.requestRender(),
-            done,
-          }),
-        { overlay: true, overlayOptions: CONFIG_OVERLAY },
+      const result = await ctx.ui.custom<{ dirty: boolean }>((tui, theme, _keybindings, done) =>
+        new ConfigPanel({
+          theme,
+          path: loaded.path,
+          draft,
+          requestRender: () => tui.requestRender(),
+          done,
+        }),
       )
       if (!result.dirty) return
       try {

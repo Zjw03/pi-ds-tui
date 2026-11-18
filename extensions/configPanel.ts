@@ -5,8 +5,8 @@
  * does not know about. The panel closes on Esc; the caller reloads so the new
  * values take effect.
  */
-import { Box, Container, SettingsList, Spacer, Text } from '@earendil-works/pi-tui'
-import type { OverlayOptions, SettingItem, SettingsListTheme } from '@earendil-works/pi-tui'
+import { Container, SettingsList, Text } from '@earendil-works/pi-tui'
+import type { Component, SettingItem, SettingsListTheme } from '@earendil-works/pi-tui'
 import type { Theme } from '@earendil-works/pi-coding-agent'
 import {
   DEFAULT_CONFIG,
@@ -273,9 +273,8 @@ export class ConfigPanel extends Container {
     this.#done = options.done
     this.#requestRender = options.requestRender
 
-    const box = new Box(1, 1, (text) => this.#theme.bg('customMessageBg', text))
-    box.addChild(new Text(this.#theme.fg('accent', this.#theme.bold('pi-ds-tui settings')), 0, 0))
-    box.addChild(new Spacer(1))
+    // Same shape as `/settings`: a rule, the list, an optional error line, a rule.
+    this.addChild(new Rule(this.#theme))
 
     this.#list = new SettingsList(
       createConfigItems(this.#draft),
@@ -285,16 +284,11 @@ export class ConfigPanel extends Container {
       () => this.#done({ dirty: this.#dirty }),
       { enableSearch: true },
     )
-    box.addChild(this.#list)
-    box.addChild(new Spacer(1))
+    this.addChild(this.#list)
 
-    this.#status = new Text(this.#hint(), 0, 0)
-    box.addChild(this.#status)
-    this.addChild(box)
-  }
-
-  #hint(): string {
-    return this.#theme.fg('dim', `saved on change \u00b7 esc closes \u00b7 ${this.#path}`)
+    this.#status = new Text('', 0, 0)
+    this.addChild(this.#status)
+    this.addChild(new Rule(this.#theme))
   }
 
   #apply(id: string, value: string): void {
@@ -302,7 +296,7 @@ export class ConfigPanel extends Container {
     try {
       writeConfigObject(this.#path, this.#draft)
       this.#dirty = true
-      this.#status.setText(this.#theme.fg('success', 'saved \u00b7 reloading when you close'))
+      this.#status.setText('')
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       this.#status.setText(this.#theme.fg('error', `save failed: ${message}`))
@@ -315,11 +309,18 @@ export class ConfigPanel extends Container {
   }
 }
 
-/** Overlay placement shared by `/ds-config`. */
-export const CONFIG_OVERLAY: OverlayOptions = {
-  width: '70%',
-  minWidth: 44,
-  maxHeight: '80%',
-  anchor: 'center',
-  margin: 1,
+/** Full-width rule, the same visual divider `/settings` uses above and below. */
+export class Rule implements Component {
+  readonly #theme: Theme
+
+  constructor(theme: Theme) {
+    this.#theme = theme
+  }
+
+  render(width: number): string[] {
+    if (width <= 0) return []
+    return [this.#theme.fg('borderMuted', '\u2500'.repeat(width))]
+  }
+
+  invalidate(): void {}
 }

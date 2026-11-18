@@ -525,16 +525,17 @@ tests/
 
 - 依赖：T0.2
 - 文件：`extensions/configPanel.ts`、`extensions/config.ts`
-- API：`ctx.ui.custom(factory, { overlay, overlayOptions })`；`@earendil-works/pi-tui` 的 `SettingsList`
+- API：`ctx.ui.custom(factory)`（不带 `overlay`，与 `/settings` 一样接管 editor 区域）；`@earendil-works/pi-tui` 的 `SettingsList`
 - 实现：
   1. 16 项开关按 `CONFIG_FIELDS` 生成，值从文件读，缺失用默认值。
   2. `Enter`/`Space` 循环取值；布尔为 `on`/`off`，`diffMode` 三态，`collapsedLines` 枚举。
   3. 每次变更立即写盘：临时文件 + rename，保留未知 key。
-  4. 写盘失败在面板底部显示错误，不关面板、不崩溃。
+  4. 写盘失败在列表下方显示一行错误，不关面板、不崩溃。
   5. `Esc` 关闭；若写过盘则 `ctx.reload()` 应用新配置。
   6. `/ds-config` 在 `enabled: false` 时仍注册，否则无法从面板里重新开启。
-- 完成：40–120 列不溢出；只改一项时文件其余内容不动。
-- 验证：`tests/config-panel.test.ts`。
+  7. 外观对齐 `/settings`：上下各一条 `borderMuted` 全宽分隔线，无标题、无背景色块。
+- 完成：40–120 列不溢出；只改一项时文件其余内容不动；非浮层。
+- 验证：`tests/config-panel.test.ts`、`tests/index.test.ts`（断言不加 `overlay`）。
 
 ### T6.6 预览与 tooltip（不做）
 
