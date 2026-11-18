@@ -38,7 +38,6 @@ export interface WorkingConfig {
 export interface MarkdownConfig {
   readonly enabled: boolean
   readonly mermaid: boolean
-  readonly stripPromptTags: boolean
 }
 
 export interface ToolCardsConfig {
@@ -72,7 +71,7 @@ export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
   header: { enabled: true, logo: true },
   editor: { enabled: true, prefix: '\u276f' },
   working: { enabled: true, message: null },
-  markdown: { enabled: true, mermaid: true, stripPromptTags: true },
+  markdown: { enabled: true, mermaid: true },
   toolCards: { enabled: true, diffMode: 'auto', collapsedLines: 24 },
   autocomplete: { enabled: true },
   messages: { enabled: true },
@@ -169,7 +168,7 @@ const FOOTER_KEYS = new Set(['enabled', 'chips', 'narrowWidth'])
 const HEADER_KEYS = new Set(['enabled', 'logo'])
 const EDITOR_KEYS = new Set(['enabled', 'prefix'])
 const WORKING_KEYS = new Set(['enabled', 'message'])
-const MARKDOWN_KEYS = new Set(['enabled', 'mermaid', 'stripPromptTags'])
+const MARKDOWN_KEYS = new Set(['enabled', 'mermaid'])
 const TOOL_CARDS_KEYS = new Set(['enabled', 'diffMode', 'collapsedLines'])
 const SIMPLE_SECTION_KEYS = new Set(['enabled'])
 
@@ -216,13 +215,6 @@ function readMarkdown(root: Record<string, unknown>, warnings: string[]): Markdo
   return {
     enabled: readBoolean(section, 'enabled', DEFAULT_CONFIG.markdown.enabled, 'markdown', warnings),
     mermaid: readBoolean(section, 'mermaid', DEFAULT_CONFIG.markdown.mermaid, 'markdown', warnings),
-    stripPromptTags: readBoolean(
-      section,
-      'stripPromptTags',
-      DEFAULT_CONFIG.markdown.stripPromptTags,
-      'markdown',
-      warnings,
-    ),
   }
 }
 

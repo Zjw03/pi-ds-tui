@@ -56,9 +56,9 @@
 - [x] T4.1 Transformer 骨架
 - [x] T4.2 Mermaid 方言
 - [x] T4.3 公式与表格增强
-- [x] T4.4 提示标签清理
+- [x] T4.4 提示标签清理（不做：保持原文）
 
-> M4 完成记录：`npm run verify` 通过（84 tests）；标准 mermaid 交给 pi，方言用 `lovely-mermaid` 渲染；表格/LaTeX 由 pi 原生支持，不重复实现；提示标签只清理 assistant/custom/summary。
+> M4 完成记录：`npm run verify` 通过；标准 mermaid 交给 pi，方言用 `lovely-mermaid` 渲染；表格/LaTeX 由 pi 原生支持，不重复实现；提示标签按需求保留原样，不再清理。
 
 **M5 工具卡**
 - [ ] T5.1 卡片外壳
@@ -369,7 +369,7 @@ tests/
 
 ## M4 Markdown
 
-> 状态：已完成。`npm run verify` 全绿；标准 mermaid 交给 pi；方言由 `lovely-mermaid` 渲染；表格/LaTeX 不重复实现；提示标签只清理 assistant/custom/summary，user 与 thinking 原样。
+> 状态：已完成。`npm run verify` 全绿；标准 mermaid 交给 pi；方言由 `lovely-mermaid` 渲染；表格/LaTeX 不重复实现；提示标签按需求保持原文。
 
 ### T4.1 Transformer 骨架
 
@@ -410,17 +410,13 @@ tests/
 - 完成：表格/公式正常；大输入不卡顿。
 - 验证：10KB Markdown 基准。
 
-### T4.4 提示标签清理
+### T4.4 提示标签清理（不做）
 
-> 已知标签：`commit_analysis`、`context`、`function_analysis`、`pr_analysis`。只清理代码块外的完整块；user 输入与 thinking 保持原样。
+> 已决定不实现：正文与代码块里的 `<context>`、`<commit_analysis>` 等标签保持模型写入的原样，不做任何隐藏或删除。
 
-- 依赖：T4.1
-- 文件：`extensions/transcript/markdown.ts`
-- 步骤：
-  1. 只清理已知的分析标签。
-  2. 不破坏代码块内的同名文本。
-- 完成：代码块原样保留；正文标签被移除。
-- 验证：含代码块的样例。
+- 原计划文件：`extensions/transcript/markdown.ts`
+- 完成：transformer 对这些标签逐字返回。
+- 验证：`prompt tags and user text are untouched`。
 
 ---
 

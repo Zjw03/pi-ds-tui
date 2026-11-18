@@ -3,9 +3,8 @@
  * Offline preview of the M4 Markdown transformer.
  *
  * Runs the real transformer (`extensions/transcript/markdown.ts`) and pi-tui's
- * Markdown renderer at several widths, so dialect diagrams, prompt-tag
- * stripping and width safety can be checked without starting pi or asking a
- * model for a diagram.
+ * Markdown renderer at several widths, so dialect diagrams and width safety
+ * can be checked without starting pi or asking a model for a diagram.
  *
  * Usage:
  *   node scripts/preview-markdown.mjs                 # tests/fixtures/markdown-demo.md
@@ -15,7 +14,6 @@
  * Flags:
  *   --widths <list>   comma-separated widths (default: 40,60,80,120)
  *   --raw             print the transformed Markdown instead of rendering it
- *   --no-tags         disable prompt-tag stripping
  *   --no-mermaid      disable dialect rendering
  *
  * This is a debugging aid, not part of `npm run verify`.
@@ -43,7 +41,6 @@ const widths = (valueOf('--widths') ?? '40,60,80,120')
 const config = {
   enabled: true,
   mermaid: !flags.has('--no-mermaid'),
-  stripPromptTags: !flags.has('--no-tags'),
 }
 
 const identity = (text) => text
@@ -68,7 +65,7 @@ const source = readFileSync(file, 'utf8')
 const transformer = createMarkdownTransformer(config)
 
 console.log(`file: ${file}`)
-console.log(`config: mermaid=${config.mermaid} stripPromptTags=${config.stripPromptTags}`)
+console.log(`config: mermaid=${config.mermaid}`)
 
 if (flags.has('--raw')) {
   const transformed = transformer(source, {

@@ -19,9 +19,6 @@ export const MARKDOWN_MESSAGE_TYPES: readonly MarkdownMessageType[] = [
   'summary',
 ]
 
-/** Tool-analysis blocks dsh-tui drops before rendering. */
-const PROMPT_TAGS = ['commit_analysis', 'context', 'function_analysis', 'pr_analysis'] as const
-
 /**
  * Dialect fences the engine understands but Pi's built-in mermaid transformer
  * does not recognize (it only matches the literal info string `mermaid`).
@@ -98,52 +95,6 @@ function firstInfoWord(info: string): string {
 
 function isDialect(info: string): boolean {
   return DIALECTS.has(firstInfoWord(info))
-}
-
-/**
- * Strip known tool-analysis blocks from prose while leaving fenced code
- * untouched. Splitting at fences also means a block that starts in prose and
- * ends inside code is preserved rather than half-removed.
- */
-export function stripPromptTags(markdown: string): string {
-  if (!markdown.includes('<')) return markdown
-
-  const pattern = new RegExp(
-    `<(${PROMPT_TAGS.join('|')})>[\\s\\S]*?</\\1>\\r?\\n?`,
-    'g',
-  )
-  const lines = markdown.split('\n')
-  const out: string[] = []
-  let prose: string[] = []
-  let fence: Fence | undefined
-
-  const flush = (): void => {
-    if (prose.length === 0) return
-    const chunk = prose.join('\n')
-    out.push(chunk.includes('<') ? chunk.replace(pattern, '') : chunk)
-    prose = []
-  }
-
-  for (const line of lines) {
-    if (fence) {
-      out.push(line)
-      if (closesFence(line, fence)) fence = undefined
-      continue
-    }
-
-    const open = openFence(line)
-    if (open) {
-      flush()
-      out.push(line)
-      fence = open
-      continue
-    }
-
-    prose.push(line)
-  }
-
-  flush()
-  return out.join('\n')
 }
 
 /** Encode a diagram row as inline code so Markdown preserves its spacing. */
@@ -247,14 +198,9 @@ function renderDialectFences(markdown: string, context: MarkdownTransformContext
 export function createMarkdownTransformer(config: MarkdownConfig): MarkdownTransformer {
   return (markdown, context) => {
     if (!config.enabled) return markdown
+    if (!config.mermaid) return markdown
+    // Thinking stays byte-for-byte what the model wrote.
     if (context.messageType === 'assistant-thinking') return markdown
-
-    let result = markdown
-    // Prompt tags are model-internal. Leave user input exactly as typed.
-    if (config.stripPromptTags && context.messageType !== 'user') {
-      result = stripPromptTags(result)
-    }
-    if (config.mermaid) result = renderDialectFences(result, context)
-    return result
+    return renderDialectFences(markdown, context)
   }
 }

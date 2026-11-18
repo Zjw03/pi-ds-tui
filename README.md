@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M4 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line, a `read` tool card and a Markdown transformer for Mermaid dialects and prompt-tag cleanup. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
+> Status: **M4 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line, a `read` tool card and a Markdown transformer that draws dialect Mermaid fences. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
 
 ## Install
 
@@ -36,7 +36,7 @@ The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defa
   "header": { "enabled": true, "logo": true },
   "editor": { "enabled": true, "prefix": "❯" },
   "working": { "enabled": true, "message": null },
-  "markdown": { "enabled": true, "mermaid": true, "stripPromptTags": true },
+  "markdown": { "enabled": true, "mermaid": true },
   "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 24 },
   "autocomplete": { "enabled": true },
   "messages": { "enabled": true },
@@ -58,7 +58,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
 | Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
 | `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
-| Markdown: dialect Mermaid (`statediagram`, `classdiagram`, `erdiagram`, `sequencediagram`) as Unicode art; prompt-analysis tags removed | automatic | `markdown.enabled` / `markdown.mermaid` / `markdown.stripPromptTags` |
+| Markdown: dialect Mermaid (`statediagram`, `classdiagram`, `erdiagram`, `sequencediagram`) as Unicode art | automatic | `markdown.enabled` / `markdown.mermaid` |
 | Config status | `/ds-ui` | always available |
 
 The footer drops low-priority chips on narrow terminals in this order:

@@ -1,13 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import type { MarkdownTransformContext } from '@earendil-works/pi-coding-agent'
-import { createMarkdownTransformer, stripPromptTags } from '../extensions/transcript/markdown.ts'
+import { createMarkdownTransformer } from '../extensions/transcript/markdown.ts'
 import type { MarkdownConfig } from '../extensions/config.ts'
 
 const BASE: MarkdownConfig = {
   enabled: true,
   mermaid: true,
-  stripPromptTags: true,
 }
 
 function context(overrides: Partial<MarkdownTransformContext> = {}): MarkdownTransformContext {
@@ -78,13 +77,7 @@ test('thinking is untouched', () => {
   assert.equal(output, input)
 })
 
-test('user input is not tag-stripped', () => {
-  const input = '<context>what does this mean?</context>'
-  const output = createMarkdownTransformer(BASE)(input, context({ messageType: 'user' }))
-  assert.equal(output, input)
-})
-
-test('prompt tags are stripped outside code fences', () => {
+test('prompt tags and user text are untouched', () => {
   const input = [
     'before',
     '<context>',
@@ -98,25 +91,14 @@ test('prompt tags are stripped outside code fences', () => {
     '',
   ].join('\n')
 
-  const output = transform(input)
-  assert.match(output, /^before\nafter/)
-  assert.doesNotMatch(output, /internal notes/)
-  assert.match(output, /```txt\n<context>keep me<\/context>\n```/)
+  assert.equal(transform(input), input)
+  for (const messageType of ['user', 'custom', 'summary'] as const) {
+    assert.equal(createMarkdownTransformer(BASE)(input, context({ messageType })), input)
+  }
 })
 
-test('unknown tags are preserved', () => {
-  const input = '<analysis>keep</analysis>\n<context>drop</context>'
-  assert.equal(stripPromptTags(input), '<analysis>keep</analysis>\n')
-})
-
-test('stripPromptTags can be disabled', () => {
-  const input = '<context>keep</context>'
-  assert.equal(transform(input, { stripPromptTags: false }), input)
-})
-
-test('mermaid can be disabled without disabling tag stripping', () => {
+test('mermaid can be disabled on its own', () => {
   assert.equal(transform(STATE_DIAGRAM, { mermaid: false }), STATE_DIAGRAM)
-  assert.equal(transform('<context>drop</context>'), '')
 })
 
 test('narrow width falls back to a framed source', () => {
@@ -130,6 +112,6 @@ test('10KB input stays fast', () => {
   const output = createMarkdownTransformer(BASE)(input, context())
   const elapsed = performance.now() - started
 
-  assert.doesNotMatch(output, /<context>/)
+  assert.equal(output, input)
   assert.ok(elapsed < 1000, `took ${elapsed.toFixed(0)}ms`)
 })

@@ -57,7 +57,7 @@ export default function piDsTui(pi: ExtensionAPI): void {
         `header: ${config.header.enabled}`,
         `editor: ${config.editor.enabled}`,
         `working: ${config.working.enabled}`,
-        `markdown: ${config.markdown.enabled} (mermaid=${config.markdown.mermaid}, tags=${config.markdown.stripPromptTags})`,
+        `markdown: ${config.markdown.enabled} (mermaid=${config.markdown.mermaid})`,
         `status: ${config.status.enabled}`,
         `toolCards: ${config.toolCards.enabled}`,
         `warnings: ${loaded.warnings.length}`,

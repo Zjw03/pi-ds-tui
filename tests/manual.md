@@ -45,7 +45,7 @@
 - [ ] 只关 editor：恢复 pi 默认编辑器。
 - [ ] 只关 working：恢复 pi 默认 working 行。
 - [ ] 只关 status：footer 不再出现 `working` 状态。
-- [ ] 只关 markdown：方言 mermaid 与提示标签清理都停止，正文恢复原文。
+- [ ] 只关 markdown：方言 mermaid 停止渲染，正文恢复原文。
 - [ ] `enabled: false`：完全恢复 pi 默认外观与命令集（除 `/ds-ui`）。
 
 ## M2 Header
@@ -96,9 +96,7 @@
 - [ ] 未知 fence（如 `plantuml`）保持原样。
 - [ ] 未闭合的方言 fence 原样保留：不转换、不丢行、不重复。
 - [ ] 流式输出时方言 fence 暂不渲染，结束后一次成型，不闪烁。
-- [ ] assistant 正文中的 `<context>…</context>`、`<commit_analysis>…</commit_analysis>` 等块被移除。
-- [ ] 代码块内的同名标签保持原样。
-- [ ] 用户输入与 thinking 内容不被清理。
-- [ ] `markdown.mermaid: false` 只关闭方言渲染，标签清理仍生效。
-- [ ] `markdown.stripPromptTags: false` 只关闭标签清理，方言渲染仍生效。
+- [ ] 正文与代码块里的 `<context>`、`<commit_analysis>` 等标签完全保持原样。
+- [ ] 用户输入与 thinking 内容不被改写。
+- [ ] `markdown.mermaid: false` 后方言 fence 显示为源码。
 - [ ] 40/60/80/120/160 列下图表与源码框都不溢出。
