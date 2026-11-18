@@ -53,10 +53,12 @@
 > M3 说明：目标/todo 面板由 `@juicesharp/rpiv-todo` 提供；pi-ds-tui 不再实现 editor widget，也不读写 `widgets` 配置。
 
 **M4 Markdown**
-- [ ] T4.1 Transformer 骨架
-- [ ] T4.2 Mermaid 方言
-- [ ] T4.3 公式与表格增强
-- [ ] T4.4 提示标签清理
+- [x] T4.1 Transformer 骨架
+- [x] T4.2 Mermaid 方言
+- [x] T4.3 公式与表格增强
+- [x] T4.4 提示标签清理
+
+> M4 完成记录：`npm run verify` 通过（84 tests）；标准 mermaid 交给 pi，方言用 `lovely-mermaid` 渲染；表格/LaTeX 由 pi 原生支持，不重复实现；提示标签只清理 assistant/custom/summary。
 
 **M5 工具卡**
 - [ ] T5.1 卡片外壳
@@ -159,6 +161,7 @@ tests/
   width.test.ts
   footer.test.ts
   tool-card.test.ts
+  markdown.test.ts
   overlays.test.ts
 ```
 
@@ -366,6 +369,8 @@ tests/
 
 ## M4 Markdown
 
+> 状态：已完成。`npm run verify` 全绿；标准 mermaid 交给 pi；方言由 `lovely-mermaid` 渲染；表格/LaTeX 不重复实现；提示标签只清理 assistant/custom/summary，user 与 thinking 原样。
+
 ### T4.1 Transformer 骨架
 
 - 依赖：T1.5
@@ -380,6 +385,8 @@ tests/
 
 ### T4.2 Mermaid 方言
 
+> pi 内置的 mermaid transformer 先于扩展 transformer 运行，只认 `mermaid` fence。因此方言不能只改 fence 名：这里用 pi 同款的 `lovely-mermaid` 直接渲染，标准 `mermaid` 仍交给 pi。
+
 - 依赖：T4.1
 - 文件：`extensions/transcript/markdown.ts`
 - API：同上
@@ -392,6 +399,8 @@ tests/
 
 ### T4.3 公式与表格增强
 
+> pi-tui 已支持 GFM 表格与 LaTeX→Unicode。本项不新增转换，只用测试锁定这些输入不被 transformer 改写。
+
 - 依赖：T4.1
 - 文件：`extensions/transcript/markdown.ts`
 - 步骤：
@@ -402,6 +411,8 @@ tests/
 - 验证：10KB Markdown 基准。
 
 ### T4.4 提示标签清理
+
+> 已知标签：`commit_analysis`、`context`、`function_analysis`、`pr_analysis`。只清理代码块外的完整块；user 输入与 thinking 保持原样。
 
 - 依赖：T4.1
 - 文件：`extensions/transcript/markdown.ts`

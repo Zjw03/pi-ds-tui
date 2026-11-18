@@ -39,6 +39,9 @@
     "check:themes": "node scripts/check-themes.mjs",
     "verify": "npm run typecheck && npm test && npm run check:public-api && npm run check:themes"
   },
+  "dependencies": {
+    "lovely-mermaid": "0.3.3"
+  },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*"

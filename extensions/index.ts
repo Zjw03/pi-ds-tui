@@ -1,13 +1,14 @@
 /**
  * pi-ds-tui entry point.
  *
- * M3 wires chrome around the transcript: footer, header, editor appearance,
- * working row and status line. Every registration is gated by its config
- * switch so the extension can be turned off piece by piece.
+ * M4 wires chrome around the transcript: footer, header, editor appearance,
+ * working row, status line and Markdown transformation. Every registration is
+ * gated by its config switch so the extension can be turned off piece by piece.
  */
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent'
 import { loadConfig } from './config.ts'
 import { createReadRenderer } from './transcript/tool-card.ts'
+import { createMarkdownTransformer, MARKDOWN_MESSAGE_TYPES } from './transcript/markdown.ts'
 import { installEditor } from './ui/editor.ts'
 import { createFooterFactory } from './ui/footer.ts'
 import { createHeaderFactory, DEFAULT_TAGLINE, pickHeaderTip, type HeaderInfo } from './ui/header.ts'
@@ -56,6 +57,7 @@ export default function piDsTui(pi: ExtensionAPI): void {
         `header: ${config.header.enabled}`,
         `editor: ${config.editor.enabled}`,
         `working: ${config.working.enabled}`,
+        `markdown: ${config.markdown.enabled} (mermaid=${config.markdown.mermaid}, tags=${config.markdown.stripPromptTags})`,
         `status: ${config.status.enabled}`,
         `toolCards: ${config.toolCards.enabled}`,
         `warnings: ${loaded.warnings.length}`,
@@ -104,6 +106,12 @@ export default function piDsTui(pi: ExtensionAPI): void {
     pi.on('agent_start', (_event, ctx) => setWorkingStatus(ctx.ui))
     pi.on('agent_settled', (_event, ctx) => clearWorkingStatus(ctx.ui))
     pi.on('session_shutdown', (_event, ctx) => clearWorkingStatus(ctx.ui))
+  }
+
+  if (config.markdown.enabled) {
+    pi.registerMarkdownTransformer(createMarkdownTransformer(config.markdown), {
+      messageTypes: MARKDOWN_MESSAGE_TYPES,
+    })
   }
 
   if (config.toolCards.enabled) {

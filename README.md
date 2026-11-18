@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M3 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line and a `read` tool card. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
+> Status: **M4 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line, a `read` tool card and a Markdown transformer for Mermaid dialects and prompt-tag cleanup. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
 
 ## Install
 
@@ -55,10 +55,13 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
 | Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
 | `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
+| Markdown: dialect Mermaid (`statediagram`, `classdiagram`, `erdiagram`, `sequencediagram`) as Unicode art; prompt-analysis tags removed | automatic | `markdown.enabled` / `markdown.mermaid` / `markdown.stripPromptTags` |
 | Config status | `/ds-ui` | always available |
 
 The footer drops low-priority chips on narrow terminals in this order:
 cost → cache → tokens → git → effort → mode. Context and the model stay.
+
+Standard `mermaid` fences are left to Pi's built-in renderer. Dialect fences are rendered with the same `lovely-mermaid` engine Pi uses, because Pi's built-in transformer runs before extension transformers.
 
 ## Commands
 
@@ -116,6 +119,7 @@ extensions/
     tool-card.ts      registerToolRenderer resolver
     tool-call.ts      read call row
     tool-result.ts    read result body
+    markdown.ts       dialect Mermaid + prompt-tag transformer
     types.ts          public-type derivations
 themes/
   dsh-dark.json
@@ -134,6 +138,7 @@ tests/
   working.test.ts
   status.test.ts
   tool-card.test.ts
+  markdown.test.ts
   manual.md
 docs/
   pi-ui-extension-surface.md

@@ -1,4 +1,4 @@
-# M1 手动冒烟清单
+# 手动冒烟清单
 
 > 自动化验证先跑 `npm run verify`。下面这些项需要真实终端与真实 pi。
 >
@@ -8,7 +8,7 @@
 
 - [ ] `pi -e .`（默认 fullscreen）能启动，无启动报错。
 - [ ] `pi -e . --tui-mode regular` 能启动。
-- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/header/editor/working/status/toolCards 开关与 warnings。
+- [ ] 输入 `/ds-ui`，能看到 config 路径、footer/header/editor/working/status/markdown/toolCards 开关与 warnings。
 
 ## Footer
 
@@ -38,6 +38,7 @@
 - [ ] 只关 editor：恢复 pi 默认编辑器。
 - [ ] 只关 working：恢复 pi 默认 working 行。
 - [ ] 只关 status：footer 不再出现 `working` 状态。
+- [ ] 只关 markdown：方言 mermaid 与提示标签清理都停止，正文恢复原文。
 - [ ] `enabled: false`：完全恢复 pi 默认外观与命令集（除 `/ds-ui`）。
 
 ## M2 Header
@@ -79,3 +80,18 @@
 
 - 目标/todo 面板与 `/ds-widgets` 已移除；使用 `@juicesharp/rpiv-todo`。
 - pi-ds-tui 不再注册 editor widget，也不读写 `widgets` 配置。
+
+## M4 Markdown
+
+- [ ] 标准 `` ```mermaid `` 图由 pi 内置渲染器显示，pi-ds-tui 不改写。
+- [ ] `` ```statediagram ``、`` ```classdiagram ``、`` ```erdiagram ``、`` ```sequencediagram `` 显示为 Unicode 图。
+- [ ] 图宽超出终端时显示带 `mermaid:` 标题的源码框，不横向溢出。
+- [ ] 未知 fence（如 `plantuml`）保持原样。
+- [ ] 未闭合的方言 fence 保持原样，不吞掉后续正文。
+- [ ] 流式输出时方言 fence 暂不渲染，结束后一次成型，不闪烁。
+- [ ] assistant 正文中的 `<context>…</context>`、`<commit_analysis>…</commit_analysis>` 等块被移除。
+- [ ] 代码块内的同名标签保持原样。
+- [ ] 用户输入与 thinking 内容不被清理。
+- [ ] `markdown.mermaid: false` 只关闭方言渲染，标签清理仍生效。
+- [ ] `markdown.stripPromptTags: false` 只关闭标签清理，方言渲染仍生效。
+- [ ] 40/60/80/120/160 列下图表与源码框都不溢出。

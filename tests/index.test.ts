@@ -17,18 +17,19 @@ function harness(): {
   commands: Map<string, unknown>
   events: Map<string, Handler[]>
   headerCalls: unknown[]
+  markdownTransformers: unknown[]
   ctx: unknown
 } {
   const commands = new Map<string, unknown>()
   const events = new Map<string, Handler[]>()
   const headerCalls: unknown[] = []
+  const markdownTransformers: unknown[] = []
   const ui = {
     theme: { fg: (_color: string, text: string) => text, bold: (text: string) => text },
     setFooter: () => {},
     setHeader: (factory: unknown) => headerCalls.push(factory),
     getEditorComponent: () => undefined,
     setEditorComponent: () => {},
-    setWidget: () => {},
     setWorkingMessage: () => {},
     setWorkingIndicator: () => {},
     setWorkingVisible: () => {},
@@ -45,11 +46,12 @@ function harness(): {
     sessionManager: { getEntryCount: () => 0, getEntries: () => [] },
     ui,
   }
-  return { commands, events, headerCalls, ctx }
+  return { commands, events, headerCalls, markdownTransformers, ctx }
 }
 
 function api(harnessed: ReturnType<typeof harness>): ExtensionAPI {
-  // SAFETY: the extension only calls registerCommand/on/registerToolRenderer.
+  // SAFETY: the extension only calls registerCommand/on/registerToolRenderer/
+  // registerMarkdownTransformer.
   return {
     registerCommand: (name: string, options: unknown) => harnessed.commands.set(name, options),
     on: (event: string, handler: Handler) => {
@@ -58,6 +60,8 @@ function api(harnessed: ReturnType<typeof harness>): ExtensionAPI {
       harnessed.events.set(event, list)
     },
     registerToolRenderer: () => {},
+    registerMarkdownTransformer: (transformer: unknown) =>
+      harnessed.markdownTransformers.push(transformer),
   } as unknown as ExtensionAPI
 }
 
@@ -88,4 +92,10 @@ test('ds-header re-applies the header on demand', async () => {
   h.headerCalls.push('other')
   await command.handler('', h.ctx)
   assert.equal(typeof h.headerCalls.at(-1), 'function')
+})
+
+test('markdown transformer is registered when enabled', () => {
+  const h = harness()
+  piDsTui(api(h))
+  assert.equal(h.markdownTransformers.length, 1)
 })

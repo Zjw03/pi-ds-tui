@@ -130,7 +130,7 @@
 | 位置 | 所有由 pi 内置 Markdown 渲染的正文：助手消息、自定义消息、部分条目 |
 | 对应功能 | 渲染前转换 Markdown：mermaid 方言、公式、表格增强、提示标签清理 |
 | API | `pi.registerMarkdownTransformer((markdown, context) => string, { messageTypes? })` |
-| 约束 | 只改文本，不换组件；按注册顺序链式执行；不要做逐帧昂贵的解析 |
+| 约束 | 只改文本，不换组件；按注册顺序链式执行；不要做逐帧昂贵的解析。pi 内置 mermaid transformer 先于扩展运行，标准 `mermaid` fence 不要重复处理；方言需自行渲染 |
 | 参考 | `extensions/renderer/markdown-enhance.ts` |
 
 ### 3.5 thinking 标签
