@@ -80,6 +80,8 @@ export default function piDsTui(pi: ExtensionAPI): void {
   if (config.header.enabled) {
     pi.on('session_start', (_event, ctx) => applyHeader(ctx))
     pi.on('resources_discover', (_event, ctx) => applyHeader(ctx))
+    pi.on('model_select', (_event, ctx) => applyHeader(ctx))
+    pi.on('thinking_level_select', (_event, ctx) => applyHeader(ctx))
     pi.registerCommand('ds-header', {
       description: 'Re-apply the pi-ds-tui header',
       handler: async (_args, ctx) => {

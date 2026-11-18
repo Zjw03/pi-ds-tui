@@ -67,6 +67,8 @@ test('header is re-applied after resources_discover', async () => {
   for (const handler of h.events.get('session_start') ?? []) await handler({}, h.ctx)
   assert.ok(h.headerCalls.length > 0)
   assert.ok(h.commands.has('ds-header'))
+  assert.ok((h.events.get('model_select') ?? []).length > 0)
+  assert.ok((h.events.get('thinking_level_select') ?? []).length > 0)
 
   // Simulate an extension loaded before us that sets its header asynchronously
   // after our session_start handler has already returned.
