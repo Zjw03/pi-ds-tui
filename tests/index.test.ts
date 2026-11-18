@@ -18,12 +18,18 @@ function harness(): {
   events: Map<string, Handler[]>
   headerCalls: unknown[]
   markdownTransformers: unknown[]
+  toolRenderers: unknown[]
+  notifications: string[]
+  ui: unknown
   ctx: unknown
 } {
   const commands = new Map<string, unknown>()
   const events = new Map<string, Handler[]>()
   const headerCalls: unknown[] = []
   const markdownTransformers: unknown[] = []
+  const toolRenderers: unknown[] = []
+  let toolsExpanded = false
+  const notifications: string[] = []
   const ui = {
     theme: { fg: (_color: string, text: string) => text, bold: (text: string) => text },
     setFooter: () => {},
@@ -34,7 +40,11 @@ function harness(): {
     setWorkingIndicator: () => {},
     setWorkingVisible: () => {},
     setStatus: () => {},
-    notify: () => {},
+    notify: (message: string) => notifications.push(message),
+    getToolsExpanded: () => toolsExpanded,
+    setToolsExpanded: (value: boolean) => {
+      toolsExpanded = value
+    },
   }
   const ctx = {
     hasUI: true,
@@ -46,7 +56,16 @@ function harness(): {
     sessionManager: { getEntryCount: () => 0, getEntries: () => [] },
     ui,
   }
-  return { commands, events, headerCalls, markdownTransformers, ctx }
+  return {
+    commands,
+    events,
+    headerCalls,
+    markdownTransformers,
+    toolRenderers,
+    notifications,
+    ui,
+    ctx,
+  }
 }
 
 function api(harnessed: ReturnType<typeof harness>): ExtensionAPI {
@@ -59,7 +78,7 @@ function api(harnessed: ReturnType<typeof harness>): ExtensionAPI {
       list.push(handler)
       harnessed.events.set(event, list)
     },
-    registerToolRenderer: () => {},
+    registerToolRenderer: (resolver: unknown) => harnessed.toolRenderers.push(resolver),
     registerMarkdownTransformer: (transformer: unknown) =>
       harnessed.markdownTransformers.push(transformer),
   } as unknown as ExtensionAPI

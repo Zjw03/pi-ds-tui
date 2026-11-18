@@ -1,4 +1,4 @@
-import type { ToolRenderers } from '@earendil-works/pi-coding-agent'
+import type { Theme, ToolRenderers } from '@earendil-works/pi-coding-agent'
 
 /**
  * `ToolRenderContext` is not re-exported from the package root. Derive it from
@@ -7,6 +7,4 @@ import type { ToolRenderers } from '@earendil-works/pi-coding-agent'
 export type ToolRenderContext = Parameters<NonNullable<ToolRenderers['renderCall']>>[2]
 
 /** The subset of pi's Theme that tool cards use. */
-export interface CardTheme {
-  fg(color: string, text: string): string
-}
+export type CardTheme = Pick<Theme, 'fg' | 'bold'>

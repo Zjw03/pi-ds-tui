@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M4 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line, a `read` tool card and a Markdown transformer that draws dialect Mermaid fences. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
+> Status: **M5 complete**. The package ships a dsh-style footer, header, editor prefix, working row, status line, Markdown dialect rendering and tool cards for the built-in file and shell tools. Permission prompts and the todo panel are intentionally not implemented; use your dedicated permission and `@juicesharp/rpiv-todo` packages.
 
 ## Install
 
@@ -57,7 +57,9 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
 | Working row: custom message and spinner frames | automatic | `working.enabled` |
 | Status line: `working` while the agent runs, cleared when settled | automatic | `status.enabled` |
-| `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
+| Tool cards for `read`, `write`, `edit`, `bash`, `powershell`, `grep`, `find`, `ls`: status dot, one-line argument, duration, collapse/expand | automatic | `toolCards.enabled` |
+| Edit diffs: unified below 120 columns, two columns above; colors from `toolDiff*` tokens | automatic | `toolCards.diffMode` |
+| Other tools (MCP, subagents, plugins) keep their own renderers | automatic | — |
 | Markdown: dialect Mermaid (`statediagram`, `classdiagram`, `erdiagram`, `sequencediagram`) as Unicode art | automatic | `markdown.enabled` / `markdown.mermaid` |
 | Config status | `/ds-ui` | always available |
 
@@ -72,6 +74,7 @@ Standard `mermaid` fences are left to Pi's built-in renderer. Dialect fences are
 | --- | --- |
 | `/ds-ui` | Show config path, feature switches, and warnings |
 | `/ds-header` | Re-apply the pi-ds-tui header |
+| `/ds-tools` | Expand or collapse every tool result |
 
 ## Troubleshooting
 
@@ -135,10 +138,12 @@ extensions/
     status.ts         extension status key
   version.ts          header version
   transcript/
-    tool-card.ts      registerToolRenderer resolver
-    tool-call.ts      read call row
-    tool-result.ts    read result body
-    markdown.ts       dialect Mermaid + prompt-tag transformer
+    tool-card.ts      registerToolRenderer resolver (claims the built-in tools)
+    tool-call.ts      one-line call row per tool
+    tool-result.ts    result body: text, diffs, collapse/expand
+    diff.ts           display-diff parsing and unified/split rendering
+    card.ts           status glyph, header composition, path/command labels
+    markdown.ts       dialect Mermaid transformer
     types.ts          public-type derivations
 themes/
   dsh-dark.json

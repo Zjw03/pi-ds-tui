@@ -7,7 +7,7 @@
  */
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent'
 import { loadConfig } from './config.ts'
-import { createReadRenderer } from './transcript/tool-card.ts'
+import { createToolRenderers } from './transcript/tool-card.ts'
 import { createMarkdownTransformer, MARKDOWN_MESSAGE_TYPES } from './transcript/markdown.ts'
 import { installEditor } from './ui/editor.ts'
 import { createFooterFactory } from './ui/footer.ts'
@@ -115,6 +115,18 @@ export default function piDsTui(pi: ExtensionAPI): void {
   }
 
   if (config.toolCards.enabled) {
-    pi.registerToolRenderer(createReadRenderer(config.toolCards))
+    pi.registerToolRenderer(createToolRenderers(config.toolCards))
+    pi.registerCommand('ds-tools', {
+      description: 'Toggle tool output expansion',
+      handler: async (_args, ctx) => {
+        if (!ctx.hasUI) return
+        const expanded = !ctx.ui.getToolsExpanded()
+        ctx.ui.setToolsExpanded(expanded)
+        ctx.ui.notify(
+          `pi-ds-tui: tool output ${expanded ? 'expanded' : 'collapsed'}`,
+          'info',
+        )
+      },
+    })
   }
 }

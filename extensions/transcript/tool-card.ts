@@ -1,6 +1,9 @@
 /**
- * Tool-card renderer resolver. M1 only claims `read`; every other tool keeps
- * pi's renderer through `next()`.
+ * Tool-card renderer resolver.
+ *
+ * Claims the built-in file and shell tools and leaves every other tool to the
+ * resolvers registered after us and to pi itself, so third-party card
+ * renderers (subagents, MCP adapters, plugins) keep working.
  */
 import type {
   AgentToolResult,
@@ -10,21 +13,33 @@ import type {
 } from '@earendil-works/pi-coding-agent'
 import type { ToolRenderContext } from './types.ts'
 import type { ToolCardsConfig } from '../config.ts'
-import { ReadCallCard } from './tool-call.ts'
-import { ReadResultCard } from './tool-result.ts'
+import { ToolCallCard } from './tool-call.ts'
+import { ToolResultCard } from './tool-result.ts'
 
-export function createReadRenderer(config: ToolCardsConfig): ToolRendererResolver {
+/** Tools this extension renders itself. */
+export const CLAIMED_TOOLS: ReadonlySet<string> = new Set([
+  'read',
+  'write',
+  'edit',
+  'bash',
+  'powershell',
+  'grep',
+  'find',
+  'ls',
+])
+
+export function createToolRenderers(config: ToolCardsConfig): ToolRendererResolver {
   return (toolName, next) => {
-    if (toolName !== 'read') return next()
+    if (!CLAIMED_TOOLS.has(toolName)) return next()
     return {
       renderCall: (args: unknown, theme: Theme, context: ToolRenderContext) =>
-        new ReadCallCard(args, theme, context),
+        new ToolCallCard(toolName, args, theme, context),
       renderResult: (
         result: AgentToolResult<unknown>,
         options: ToolRenderResultOptions,
         theme: Theme,
         context: ToolRenderContext,
-      ) => new ReadResultCard(result, options, theme, context, config),
+      ) => new ToolResultCard(toolName, result, options, theme, context, config),
     }
   }
 }

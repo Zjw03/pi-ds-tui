@@ -61,13 +61,15 @@
 > M4 完成记录：`npm run verify` 通过；标准 mermaid 交给 pi，方言用 `lovely-mermaid` 渲染；表格/LaTeX 由 pi 原生支持，不重复实现；提示标签按需求保留原样，不再清理。
 
 **M5 工具卡**
-- [ ] T5.1 卡片外壳
-- [ ] T5.2 Call 渲染
-- [ ] T5.3 Result 渲染
-- [ ] T5.4 Diff 渲染
-- [ ] T5.5 工具分组
-- [ ] T5.6 全局展开状态
-- [ ] T5.7 特殊工具
+- [x] T5.1 卡片外壳
+- [x] T5.2 Call 渲染
+- [x] T5.3 Result 渲染
+- [x] T5.4 Diff 渲染
+- [x] T5.5 工具分组（不做：无公开 API）
+- [x] T5.6 全局展开状态
+- [x] T5.7 特殊工具
+
+> M5 完成记录：`npm run verify` 通过（93 tests）；接管 8 个内置文件/外壳工具，其他工具交给 `next()` 与 pi；diff 按宽度自动单/双栏；`/ds-tools` 一键展开。
 
 **M6 Overlays**
 - [ ] T6.1 Overlay 基类
@@ -144,7 +146,7 @@ extensions/
     tool-call.ts
     tool-result.ts
     diff.ts
-    grouping.ts
+    card.ts
     markdown.ts
     messages.ts
     entries.ts
@@ -422,79 +424,80 @@ tests/
 
 ## M5 工具卡铺开
 
+> 状态：已完成。`npm run verify` 全绿；接管 8 个内置工具，其他工具交给 `next()`。
+
 ### T5.1 卡片外壳
 
 - 依赖：T1.3
-- 文件：`extensions/transcript/tool-card.ts`
+- 文件：`extensions/transcript/tool-card.ts`、`card.ts`
 - API：`registerToolRenderer`
-- 步骤：
-  1. 统一标题、状态点、耗时、折叠/展开。
-  2. 背景与边框走主题 token。
-- 完成：所有工具名都能落到外壳；未知工具有兜底。
-- 验证：快照 + 手动。
+- 实现：
+  1. 一个状态点 + 工具名 + 参数 + `·` 元信息（行号/计数/耗时）。
+  2. 外壳用 pi 默认 `renderShell`，背景与左右边距走 pi 的 Box（`toolPendingBg` / `toolSuccessBg` / `toolErrorBg`）。
+  3. 只接管 `read`、`write`、`edit`、`bash`、`powershell`、`grep`、`find`、`ls`；其余工具 `next()`，保留第三方 renderer。
+- 完成：8 个工具都有统一外壳；未知参数不报错；其他工具不受影响。
+- 验证：`resolver claims built-in tools and defers everything else`。
 
 ### T5.2 Call 渲染
 
 - 依赖：T5.1
 - 文件：`extensions/transcript/tool-call.ts`
-- 步骤：
-  1. 按工具族画参数：read/write/edit/bash/grep/glob/web/task/mcp。
-  2. 路径中段截断；命令保留尾部。
-- 完成：每族都有快照；窄宽度不溢出。
+- 实现：
+  1. `read` 显示 `路径:offset+limit`；`write` 显示 `+N lines`；`edit` 显示 `N edits`。
+  2. `bash`/`powershell` 显示命令并保留尾部（左侧省略）。
+  3. `grep`/`find` 显示 pattern，`in path` 作为第二段；`ls` 显示目录。
+  4. `write` 展开时在标题下预览内容（上限 400 行）。
+- 完成：每族都有断言；40/60/80/120/160 列均不溢出。
 - 验证：`tests/tool-card.test.ts`。
 
 ### T5.3 Result 渲染
 
 - 依赖：T5.1
 - 文件：`extensions/transcript/tool-result.ts`
-- 步骤：
-  1. 处理文本、代码、JSON、图片。
-  2. 超长折叠；给展开提示。
-  3. partial 更新不闪烁。
-- 完成：四种结果类型都有快照。
-- 验证：手动流式工具调用。
+- 实现：
+  1. 文本按 `collapsedLines` 折叠；`bash`/`powershell` 保留尾部，其他保留头部。
+  2. 空结果：流式显示 `running…`，否则不占行。
+  3. 错误正文用 error token；图片在未开内联图片时显示 `[image …]`。
+  4. `details.truncation` / `fullOutputPath` 追加一行 dim 提示。
+- 完成：有内容后不再追加状态行，不会因 partial 抖动。
+- 验证：`result collapses…`、`bash result keeps the newest lines`、`error results…`。
 
 ### T5.4 Diff 渲染
 
 - 依赖：T5.3
 - 文件：`extensions/transcript/diff.ts`
-- 步骤：
-  1. 解析 unified diff。
-  2. 宽度 ≥ 阈值用双栏，否则单栏。
-  3. 超长 diff 折叠，展开显示全部。
-- 完成：120 列双栏、80 列单栏；ANSI 不泄漏。
-- 验证：edit/write 各一次。
+- 实现：
+  1. 解析 pi edit 的显示 diff（`+123 content` / `-123 content` / ` 123 content`）。
+  2. `auto`：`>= 120` 列双栏，否则单栏；`split` / `unified` 可强制。
+  3. 双栏按 `-` 与 `+` 序号配对，上下文两侧重复。
+  4. 超过 `collapsedLines` 折叠并追加 `… +N lines`。
+- 完成：20–160 列 × 三种模式均不溢出；颜色走 `toolDiffAdded` / `toolDiffRemoved` / `toolDiffContext`。
+- 验证：`diff rendering never exceeds the width`。
 
-### T5.5 工具分组
+### T5.5 工具分组（不做）
 
-- 依赖：T5.1
-- 文件：`extensions/transcript/grouping.ts`
-- 步骤：
-  1. 连续同类调用合并为一组。
-  2. 组级展开/折叠。
-- 完成：组内状态正确；不吞掉错误。
-- 验证：连续 5 次 read。
+> 已确认不可行：`registerToolRenderer` 只决定单个 tool call 的渲染，无法把相邻调用合并成一个组件。
+> 要分组必须接管整个 transcript，而那是公开 API 不提供的能力（同侧栏）。
 
 ### T5.6 全局展开状态
 
 - 依赖：T5.1
-- 文件：`extensions/transcript/tool-card.ts`
+- 文件：`extensions/transcript/tool-card.ts`、`extensions/index.ts`
 - API：`ctx.ui.setToolsExpanded`、`getToolsExpanded`
-- 步骤：
-  1. 注册一个命令/按键切换。
-  2. 切换后重建所有卡片缓存。
-- 完成：一次性展开/收起全部。
-- 验证：20 个工具调用。
+- 实现：`/ds-tools` 读取当前状态并取反，pi 负责重绘所有卡片。
+- 完成：一次命令展开/收起全部；`toolCards.enabled: false` 时不注册。
+- 验证：`tests/index.test.ts` 命令存在性与切换。
 
 ### T5.7 特殊工具
 
 - 依赖：T5.2、T5.3
-- 文件：`extensions/transcript/tool-*.ts`
-- 步骤：
-  1. 处理图片、web fetch、task/subagent、MCP。
-  2. 无法识别的结构退回文本。
-- 完成：每种都有兜底；不抛错。
-- 验证：样例结果快照。
+- 文件：`extensions/transcript/tool-result.ts`
+- 实现：
+  1. 图片结果：未开内联图片时给出占位符，不重复渲染 pi 的图片组件。
+  2. MCP / subagent / web fetch / todo：不接管，交给对应扩展或 pi 的通用渲染。
+  3. 结构异常的 args/details 全部按缺失处理。
+- 完成：不接管就不会覆盖第三方卡片；自己的 8 个工具都有兜底。
+- 验证：`describeCall tolerates missing and malformed arguments`。
 
 ---
 

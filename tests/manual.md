@@ -26,16 +26,47 @@
 - [ ] 切换 dsh-dark / dsh-light，颜色正确，无旧颜色残留。
 - [ ] `footer.enabled: false` 后恢复 pi 内置 footer。
 
-## read 工具卡
+## M5 工具卡
 
-- [ ] 让模型读一个长文件，卡片显示状态点、`read`、路径。
-- [ ] 超过 `toolCards.collapsedLines` 时折叠，并显示展开提示。
-- [ ] 展开后显示全部行。
-- [ ] 流式读取时显示 `reading…`。
-- [ ] 错误结果以 `✗` 开头。
-- [ ] 窄终端（40 列）下路径中段截断，不溢出。
-- [ ] `toolCards.enabled: false` 后恢复 pi 默认 read 卡片。
-- [ ] 其他工具（bash/edit/grep）保持 pi 默认渲染。
+### 外壳
+
+- [ ] `read`、`write`、`edit`、`bash`、`grep`、`find`、`ls` 都显示状态点 + 工具名 + 参数 + 耗时。
+- [ ] 运行中为 `●`，成功为 `✓`，失败为 `✗`。
+- [ ] 背景跟随 `toolPendingBg` / `toolSuccessBg` / `toolErrorBg`。
+- [ ] 窄终端（40 列）下路径中段截断、命令保留尾部，不溢出。
+- [ ] `toolCards.enabled: false` 后全部恢复 pi 默认渲染。
+- [ ] MCP / subagent / todo 等第三方工具仍显示它们自己的卡片。
+
+### Call
+
+- [ ] `read` 显示 `路径:offset+limit`。
+- [ ] `write` 显示 `+N lines`；展开时在标题下显示内容预览。
+- [ ] `edit` 显示 `N edits`。
+- [ ] `bash` / `powershell` 超长命令保留尾部。
+- [ ] `grep` / `find` 显示 pattern 与 `in path`；`ls` 显示目录。
+
+### Result
+
+- [ ] 超过 `toolCards.collapsedLines` 时折叠，并显示 `… +N lines (ctrl+o to expand)`。
+- [ ] `bash` 折叠时保留最后几行，提示显示 `… N earlier lines`。
+- [ ] `ctrl+o` 一次性展开/收起（由 pi 处理）。
+- [ ] 空的流式结果显示 `running…`；有内容后不闪。
+- [ ] 错误结果正文用 error 颜色；`✗` 在标题行。
+- [ ] 图片结果在不开内联图片时显示 `[image …]`。
+
+### Diff
+
+- [ ] `edit` 的 diff 在 80 列下为单栏：`+`/`-` 行分别用 `toolDiffAdded` / `toolDiffRemoved`。
+- [ ] 120 列以上为双栏，中间有 `│`，两侧都不过宽。
+- [ ] `toolCards.diffMode: "unified"` 时即使宽屏也单栏；`"split"` 时强制双栏。
+- [ ] 超过折叠行数时末尾显示 `… +N lines`。
+- [ ] 中文/emoji 行不破坏对齐。
+
+### 全局展开
+
+- [ ] `/ds-tools` 在所有卡片展开/收起之间切换。
+- [ ] 切换后已渲染的卡片同步更新。
+- [ ] 连续切换 5 次不残留状态。
 
 ## 组合开关
 

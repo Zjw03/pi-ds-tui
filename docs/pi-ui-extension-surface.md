@@ -98,7 +98,7 @@
 | 位置 | transcript 中每次工具调用所在行 |
 | 对应功能 | 决定 `renderCall` 与 `renderResult` 两个 slot 怎么画：标题、参数、结果、耗时、展开态 |
 | API | `pi.registerToolRenderer((toolName, next) => ({ renderCall?, renderResult? }))` |
-| 约束 | 只改渲染，不改执行；省略的 slot 继承内置渲染；`next()` 返回后续 resolver/内置结果，可组合；必须处理流式 partial 结果 |
+| 约束 | 只改渲染，不改执行；省略的 slot 继承内置渲染；`next()` 返回后续 resolver/内置结果，可组合；必须处理流式 partial 结果。只接管自己确实要画 Tools 名，其余工具必须 `next()`，否则会覆盖第三方 renderer |
 | 参考 | `extensions/renderer/default-mode.ts`、`tool/ccstyle-tool.ts`、`tool/tool-io.ts`、`tool/grouping.ts`、`tool/diff/*` |
 
 > pi-cc-extensions 的 default mode 直接 import `ToolExecutionComponent` 并打原型补丁，这不是公开契约。移植时改用 `registerToolRenderer`，不要照抄补丁。
