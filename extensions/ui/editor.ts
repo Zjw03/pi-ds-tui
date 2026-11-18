@@ -18,6 +18,7 @@ export interface EditorUi {
 
 let installed: EditorFactory | undefined
 let previous: EditorFactory | undefined
+let installedEmbed: boolean | undefined
 
 const PREFIX_COLS = 2
 
@@ -38,8 +39,14 @@ export function applyPromptPrefix(
 export class DshEditor extends CustomEditor {
   readonly #prefix: string
 
-  constructor(tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager, prefix: string) {
-    super(tui, theme, keybindings)
+  constructor(
+    tui: TUI,
+    theme: EditorTheme,
+    keybindings: KeybindingsManager,
+    prefix: string,
+    embedWorkingStatus: boolean,
+  ) {
+    super(tui, theme, keybindings, { embedWorkingStatus })
     this.#prefix = prefix
   }
 
@@ -57,19 +64,26 @@ export class DshEditor extends CustomEditor {
   }
 }
 
-export function createEditorFactory(prefix: string): EditorFactory {
+export function createEditorFactory(prefix: string, embedWorkingStatus: boolean): EditorFactory {
   const glyph = Array.from(prefix)[0] ?? '\u276f'
   const factory: EditorFactory = (tui, theme, keybindings) =>
-    new DshEditor(tui, theme, keybindings, glyph)
+    new DshEditor(tui, theme, keybindings, glyph, embedWorkingStatus)
   return factory
 }
 
 /** Install the editor, remembering the factory that owned the slot before us. */
-export function installEditor(ui: EditorUi, prefix: string): void {
+export function installEditor(ui: EditorUi, prefix: string, embedWorkingStatus = true): void {
   const current = ui.getEditorComponent()
-  if (installed !== undefined && current === installed) return
+  if (
+    installed !== undefined &&
+    current === installed &&
+    installedEmbed === embedWorkingStatus
+  ) {
+    return
+  }
   previous = current
-  installed = createEditorFactory(prefix)
+  installed = createEditorFactory(prefix, embedWorkingStatus)
+  installedEmbed = embedWorkingStatus
   ui.setEditorComponent(installed)
 }
 
@@ -79,4 +93,5 @@ export function restoreEditor(ui: EditorUi): void {
   ui.setEditorComponent(previous)
   installed = undefined
   previous = undefined
+  installedEmbed = undefined
 }

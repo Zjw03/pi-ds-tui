@@ -56,7 +56,7 @@ Use `/ds-ui` to print the resolved path, whether the file was found, and any war
 | dsh-style footer: cwd and branch with model on the right, then a full-width context bar (`42% · 128k · CH 87%`) | automatic | `footer.enabled` |
 | Header: DeepSeek whale + `DEEPSEEK`/`PI` block wordmark + model/effort + cwd + tip + tagline | automatic | `header.enabled` / `header.logo` |
 | Editor: `❯` prompt glyph, app keybindings/autocomplete/IME preserved | automatic | `editor.enabled` |
-| Working row: `⠋ Working... (↓ 742 tokens · 11s)` above the editor, left-aligned and refreshed every second | automatic | `working.enabled` |
+| Working row: `⠋ Working... (↓ 742 tokens · 11s)` embedded in the editor's top border, refreshed every second | automatic | `working.enabled` |
 | Tool cards for `read`, `write`, `edit`, `bash`, `powershell`, `grep`, `find`, `ls`: status dot, one-line argument, duration, collapse/expand | automatic | `toolCards.enabled` |
 | Edit diffs: unified below 120 columns, two columns above; colors from `toolDiff*` tokens | automatic | `toolCards.diffMode` |
 | Other tools (MCP, subagents, plugins) keep their own renderers | automatic | — |
