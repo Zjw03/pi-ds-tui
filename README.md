@@ -2,7 +2,7 @@
 
 dsh-tui style UI for [pi](https://github.com/earendil-works/pi), built only on pi's public extension APIs.
 
-> Status: **M0 scaffold**. The package currently loads a validated config, ships two themes, and provides width-safe render helpers. UI registrations arrive in later milestones.
+> Status: **M1 thin slice**. The package ships a dsh-style footer, a `read` tool card, and an approval overlay, all gated by config switches.
 
 ## Install
 
@@ -27,7 +27,7 @@ The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defa
   "enabled": true,
   "footer": {
     "enabled": true,
-    "chips": ["model", "context", "tokens", "cache", "cost", "git", "cwd"],
+    "chips": ["model", "context", "tokens", "cache", "cost", "git", "mode", "effort", "cwd"],
     "narrowWidth": 60
   },
   "header": { "enabled": true },
@@ -46,6 +46,25 @@ The config file lives at `~/.pi/agent/pi-ds-tui.json`. A missing file means defa
 
 Use `/ds-ui` to print the resolved path, whether the file was found, and any warnings.
 
+## Features
+
+| Feature | Entry | Config switch |
+| --- | --- | --- |
+| dsh-style footer: cwd, context, tokens, cache, cost, git, mode, effort, model | automatic | `footer.enabled` |
+| `read` tool card: status dot, path, line range, duration, collapse/expand | automatic | `toolCards.enabled` |
+| Approval overlay: Allow / Deny / Always allow | `/ds-approve` | `overlays.enabled` |
+| Config status | `/ds-ui` | always available |
+
+The footer drops low-priority chips on narrow terminals in this order:
+cost → cache → tokens → git → effort → mode. Context and the model stay.
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `/ds-ui` | Show config path, feature switches, and warnings |
+| `/ds-approve` | Preview the approval overlay (TUI only) |
+
 ## Themes
 
 `dsh-dark` and `dsh-light` map dsh-tui's semantic palette onto pi's 56 color tokens. Select them in `/settings` → Theme.
@@ -61,11 +80,13 @@ npm run check:public-api
 npm run check:themes
 ```
 
+Manual smoke tests are in [tests/manual.md](tests/manual.md).
+
 ## Layout
 
 ```text
 extensions/
-  index.ts            extension entry (/ds-ui)
+  index.ts            extension entry (/ds-ui, /ds-approve)
   config.ts           config schema, defaults, validation
   ui/
     theme.ts          theme wrappers
@@ -73,6 +94,15 @@ extensions/
     cache.ts          width-keyed cache
     component.ts      Component base class
     icons.ts          shared glyphs
+    footer.ts         footer snapshot + renderer + component
+  transcript/
+    tool-card.ts      registerToolRenderer resolver
+    tool-call.ts      read call row
+    tool-result.ts    read result body
+    types.ts          public-type derivations
+  overlays/
+    base.ts           bordered panel helper
+    approval.ts       approval overlay + /ds-approve
 themes/
   dsh-dark.json
   dsh-light.json
@@ -84,6 +114,10 @@ tests/
   width.test.ts
   component.test.ts
   theme.test.ts
+  footer.test.ts
+  tool-card.test.ts
+  overlays.test.ts
+  manual.md
 docs/
   pi-ui-extension-surface.md
   pi-ui-extension-todo.md

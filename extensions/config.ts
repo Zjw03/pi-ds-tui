@@ -72,7 +72,7 @@ export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
   enabled: true,
   footer: {
     enabled: true,
-    chips: ['model', 'context', 'tokens', 'cache', 'cost', 'git', 'cwd'],
+    chips: ['model', 'context', 'tokens', 'cache', 'cost', 'git', 'mode', 'effort', 'cwd'],
     narrowWidth: 60,
   },
   header: { enabled: true },

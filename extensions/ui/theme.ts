@@ -11,7 +11,6 @@ export interface UiTheme {
   fg(color: string, text: string): string
   bg(color: string, text: string): string
   bold(text: string): string
-  dim(text: string): string
   italic?(text: string): string
   underline?(text: string): string
 }
@@ -29,7 +28,7 @@ export function bold(theme: UiTheme, text: string): string {
 }
 
 export function dim(theme: UiTheme, text: string): string {
-  return theme.dim(text)
+  return theme.fg('dim', text)
 }
 
 export function italic(theme: UiTheme, text: string): string {

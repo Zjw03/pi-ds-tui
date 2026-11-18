@@ -29,11 +29,13 @@
 > M0 完成记录：`npm run verify` 通过（23 tests）；2 套主题 × 56 token；`/ds-ui` 已注册。
 
 **M1 薄切片**
-- [ ] T1.1 Footer 骨架
-- [ ] T1.2 Footer 芯片与优先级
-- [ ] T1.3 第一个工具卡（read）
-- [ ] T1.4 第一个 overlay（审批）
-- [ ] T1.5 M1 开关与冒烟
+- [x] T1.1 Footer 骨架
+- [x] T1.2 Footer 芯片与优先级
+- [x] T1.3 第一个工具卡（read）
+- [x] T1.4 第一个 overlay（审批）
+- [x] T1.5 M1 开关与冒烟
+
+> M1 完成记录：`npm run verify` 通过（48 tests）；footer、read 卡片、审批 overlay 已接入；真机冒烟清单见 `tests/manual.md`。
 
 **M2 Chrome**
 - [ ] T2.1 Header
@@ -239,6 +241,8 @@ tests/
 ---
 
 ## M1 薄切片（Footer + 一个工具卡 + 一个 overlay）
+
+> 状态：已完成。`npm run verify` 全绿；三项能力都有独立开关；`/ds-approve` 可手动触发。
 
 ### T1.1 Footer 骨架
 
