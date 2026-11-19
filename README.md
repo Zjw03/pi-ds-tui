@@ -19,7 +19,7 @@ cd /path/to/pi-ds-tui
 pi -e .
 ```
 
-Pick `dsh-dark` or `dsh-light` in `/settings` → Theme. `/ds-ui` prints the resolved config path, every switch and any warnings; settings are re-read on `/reload`.
+Pick `ds` in `/settings` → Theme. `/ds-ui` prints the resolved config path, every switch and any warnings; settings are re-read on `/reload`.
 
 The package is `private` while the UI is under construction. Remove `"private": true` from `package.json` before publishing.
 
@@ -100,7 +100,7 @@ Also confirm pi-ds-tui is actually loaded: `pi list` should show it, or run `pi 
 
 ## Themes
 
-`dsh-dark` mirrors pi's `dark` palette token for token, with one deliberate change: markdown headings (`mdHeading`) use the DeepSeek whale blue `#4E6FFF`. `dsh-light` keeps the dsh-tui light palette. Select them in `/settings` → Theme.
+`ds` mirrors pi's `dark` palette token for token, with one deliberate change: markdown headings (`mdHeading`) use the DeepSeek whale blue `#4E6FFF`. Select it in `/settings` → Theme.
 
 ## Development
 
@@ -159,8 +159,7 @@ extensions/
     markdown.ts       dialect Mermaid transformer
     types.ts          public-type derivations
 themes/
-  dsh-dark.json
-  dsh-light.json
+  ds.json
 scripts/
   check-public-api.mjs
   check-themes.mjs
@@ -203,7 +202,7 @@ The UI is modelled on [dsh-TUI](https://github.com/ccch1mneyyy/dsh-TUI) by [ccch
 - the three-line footer (cwd/branch with model on the right, full-width context meter, extension statuses) and its blue ramp
 - the header: 13-row pixel whale, block `DEEPSEEK`/`PI` wordmark, tip and tagline layout
 - the `❯` editor prompt, the working row in the editor's top border, and the collapsed tool-row density
-- the `dsh-light` palette and the glyphs used for tool and transcript rows
+- the `ds` palette and the glyphs used for tool and transcript rows
 
 Ported directly from that project: the 25x40 whale sprite in `extensions/ui/whale.ts`, the block wordmark faces in `extensions/ui/bigfont.ts`, and the glyph set in `extensions/ui/icons.ts`. Everything else is implemented independently against pi's public extension APIs; no dsh-TUI application code is vendored.
 

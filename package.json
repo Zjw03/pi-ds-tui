@@ -27,8 +27,7 @@
       "./extensions/index.ts"
     ],
     "themes": [
-      "./themes/dsh-dark.json",
-      "./themes/dsh-light.json"
+      "./themes/ds.json"
     ]
   },
   "scripts": {

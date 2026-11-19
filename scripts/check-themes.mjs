@@ -3,7 +3,8 @@
  * Validate bundled themes against the pi theme contract.
  *
  * pi rejects unknown color keys, so this gate catches typos before a theme is
- * loaded by the TUI. It also keeps the two dsh themes in sync with each other.
+ * loaded by the TUI. It also keeps bundled themes consistent with the pi
+ * theme contract.
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url'
 const dir = fileURLToPath(new URL('../themes/', import.meta.url))
 const files = readdirSync(dir).filter((file) => file.endsWith('.json')).sort()
 
-test('both dsh themes ship', () => {
-  assert.deepEqual(files, ['dsh-dark.json', 'dsh-light.json'])
+test('the ds theme ships', () => {
+  assert.deepEqual(files, ['ds.json'])
 })
 
 for (const file of files) {

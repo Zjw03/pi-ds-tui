@@ -1,6 +1,6 @@
 {
   "$schema": "https://pi.dev/schemas/theme.schema.json",
-  "name": "dsh-dark",
+  "name": "ds",
   "appearance": "dark",
   "colors": {
     "accent": "#a798d7",

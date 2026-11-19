@@ -8,8 +8,8 @@
 
 - [ ] 配置已就位：`~/.pi/agent/pi-ds-tui.json`（Windows：`C:/Users/<user>/.pi/agent/pi-ds-tui.json`）。
 - [ ] 未安装时用 `pi -e .` 启动；已安装时直接 `pi`。
-- [ ] `/settings` → Theme 选择 `dsh-dark` 或 `dsh-light`。
-- [ ] `dsh-dark` 的其余 token 与 pi `dark` 一致，仅 markdown 标题（`mdHeading`）为鲸鱼蓝 `#4E6FFF`。
+- [ ] `/settings` → Theme 选择 `ds`。
+- [ ] `ds` 的其余 token 与 pi `dark` 一致，仅 markdown 标题（`mdHeading`）为鲸鱼蓝 `#4E6FFF`。
 - [ ] 离线预览 Markdown 转换：`npm run preview:markdown`（默认 40/60/80/120 列）。
 
 ## 启动
@@ -32,7 +32,7 @@
 - [ ] 新会话无助手消息时 `CH` 不显示；上下文未知时显示 `?`。
 - [ ] 宽度 40 时 cwd 中段截断、分支与 thinking 依次隐藏，条与 model 保留。
 - [ ] 中文/emoji cwd 不破坏对齐；条始终恰好占满一行。
-- [ ] 切换 dsh-dark / dsh-light，条的颜色正确，无旧颜色残留。
+- [ ] 切换回其他主题再切回 `ds`，条的颜色正确，无旧颜色残留。
 - [ ] `footer.enabled: false` 后恢复 pi 内置 footer。
 
 ## M5 工具卡
@@ -107,7 +107,7 @@
 - [ ] 宽度 40–63 时显示鲸鱼 + 一行名称 + 模型/cwd/tip + 欢迎语。
 - [ ] 宽度 <40 时降级为纯文本；<16 时只留名称。
 - [ ] `header.logo: false` 时始终纯文本，但仍显示模型/cwd/tip/欢迎语。
-- [ ] 切换 dsh-dark / dsh-light，鲸鱼颜色保持 DeepSeek 蓝，文本跟随主题。
+- [ ] 切换回其他主题再切回 `ds`，鲸鱼颜色保持 DeepSeek 蓝，文本跟随主题。
 - [ ] 与其他会异步设置 header 的扩展同时加载时，`resources_discover` 后 header 是 pi-ds-tui。
 - [ ] 被其他扩展覆盖后，`/ds-header` 能立刻拿回 header。
 - [ ] `header.enabled: false` 后恢复 pi 内置 header。
