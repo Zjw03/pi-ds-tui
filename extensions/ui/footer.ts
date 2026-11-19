@@ -9,7 +9,7 @@
 import type { Component } from '@earendil-works/pi-tui'
 import type { Theme } from '@earendil-works/pi-coding-agent'
 import type { FooterConfig } from '../config.ts'
-import { fitLine, padRight, sanitizeSingleLine, truncateMiddle, visibleWidth } from './text.ts'
+import { fitLine, padRight, sanitizeSingleLine, truncateMiddle, truncateTail, visibleWidth } from './text.ts'
 import { whaleBlue } from './whale.ts'
 import { hexFg } from './theme.ts'
 
@@ -76,8 +76,9 @@ export function snapshotFooter(
 ): FooterSnapshot {
   const usage = ctx.getContextUsage?.()
   const cacheHitPercent = readCacheHitPercent(ctx.sessionManager, cache)
-  const statuses = [...data.getExtensionStatuses().values()]
-    .map((text) => sanitizeSingleLine(text))
+  const statuses = [...data.getExtensionStatuses().entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([, text]) => sanitizeSingleLine(text))
     .filter((text) => text.length > 0)
 
   return {
@@ -115,7 +116,7 @@ export function renderFooter(
   }
 
   if (snapshot.statuses.length > 0) {
-    lines.push(theme.fg('dim', truncateMiddle(snapshot.statuses.join(' \u00b7 '), inner)))
+    lines.push(theme.fg('dim', truncateTail(snapshot.statuses.join(' \u00b7 '), inner)))
   }
 
   if (margin === 0) return lines
@@ -180,6 +181,7 @@ function layoutStatusLine(
   theme: FooterTheme,
 ): string {
   const showCwd = config.chips.includes('cwd')
+  const showModel = config.chips.includes('model')
   let keepBranch =
     config.chips.includes('git') &&
     snapshot.gitBranch !== null &&
@@ -187,7 +189,7 @@ function layoutStatusLine(
   let keepThinking = config.chips.includes('effort')
 
   const compose = (): { left: string; right: string } => {
-    const right = modelLabel(snapshot, theme, keepThinking)
+    const right = modelLabel(snapshot, theme, showModel, keepThinking)
     const branch = keepBranch
       ? branchColor(`${BRANCH_GLYPH} ${snapshot.gitBranch ?? ''}`)
       : ''
@@ -246,11 +248,19 @@ export function thinkingToken(level: string): string {
   return THINKING_TOKENS[level] ?? 'dim'
 }
 
-function modelLabel(snapshot: FooterSnapshot, theme: FooterTheme, includeThinking: boolean): string {
-  const model = snapshot.model ?? 'no-model'
-  const label = whaleBlue(model)
-  if (!includeThinking || snapshot.thinking === null || snapshot.thinking.length === 0) return label
-  return `${label}${theme.fg(thinkingToken(snapshot.thinking), ` \u00b7 ${snapshot.thinking}`)}`
+function modelLabel(
+  snapshot: FooterSnapshot,
+  theme: FooterTheme,
+  includeModel: boolean,
+  includeThinking: boolean,
+): string {
+  const parts: string[] = []
+  if (includeModel) parts.push(whaleBlue(snapshot.model ?? 'no-model'))
+  if (includeThinking && snapshot.thinking !== null && snapshot.thinking.length > 0) {
+    const separator = parts.length > 0 ? ' \u00b7 ' : ''
+    parts.push(theme.fg(thinkingToken(snapshot.thinking), `${separator}${snapshot.thinking}`))
+  }
+  return parts.join('')
 }
 
 /**
@@ -263,21 +273,27 @@ function readCacheHitPercent(
 ): number | null {
   if (!session) return null
 
-  const entries = session.getEntries()
-  const entryCount = session.getEntryCount?.() ?? entries.length
-  if (cache !== undefined && cache.entryCount === entryCount) return cache.cacheHitPercent
+  // Check the count before touching getEntries(): it copies the whole session,
+  // and the footer renders on every frame (pi's SessionManager documents this).
+  const entryCount = session.getEntryCount?.()
+  if (cache !== undefined && entryCount !== undefined && cache.entryCount === entryCount) {
+    return cache.cacheHitPercent
+  }
 
+  const entries = session.getEntries()
   let percent: number | null = null
-  for (const raw of entries) {
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const raw = entries[index]
     if (!isEntry(raw) || raw.type !== 'message' || raw.message?.role !== 'assistant') continue
     const usage = raw.message.usage
-    if (usage === undefined) continue
+    if (usage === undefined) break
     const prompt = (usage.input ?? 0) + (usage.cacheRead ?? 0) + (usage.cacheWrite ?? 0)
     percent = prompt > 0 ? ((usage.cacheRead ?? 0) / prompt) * 100 : 0
+    break
   }
 
   if (cache !== undefined) {
-    cache.entryCount = entryCount
+    cache.entryCount = entryCount ?? entries.length
     cache.cacheHitPercent = percent
   }
   return percent

@@ -34,18 +34,13 @@ Run `/ds-config` to edit it in place. It opens in the editor area like `/setting
   "enabled": true,
   "footer": {
     "enabled": true,
-    "chips": ["model", "context", "git", "effort", "cwd"],
-    "narrowWidth": 60
+    "chips": ["model", "context", "git", "effort", "cwd"]
   },
   "header": { "enabled": true, "logo": true },
   "editor": { "enabled": true, "prefix": "❯" },
   "working": { "enabled": true, "message": null },
   "markdown": { "enabled": true, "mermaid": true },
-  "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 8 },
-  "autocomplete": { "enabled": true },
-  "messages": { "enabled": true },
-  "entries": { "enabled": true },
-  "mouse": { "enabled": false }
+  "toolCards": { "enabled": true, "diffMode": "auto", "collapsedLines": 8 }
 }
 ```
 
@@ -74,6 +69,7 @@ The footer has two rows (plus one for extension statuses):
 ```
 
 - The branch follows the cwd, behind `⎇`, and only appears when the repository has one.
+- The `footer.chips` list selects sections: `model`, `context`, `git`, `effort`, `cwd`. Unknown names warn and are ignored.
 - `model · thinking` is right-aligned on that same row, above the bar. The model uses the whale blue; the thinking label uses the theme's `thinking<Level>` token, the same colour pi gives the editor border for that effort.
 - Every footer row keeps a one-column margin on both sides, so it lines up with extension widgets and status rows above it and the bar never touches the terminal edge.
 - The bar is one meter: `█` fill and `░` track spanning the terminal, readout right-aligned in the track. The fill and the model name use the header's whale blue (`#4E6FFF`). The cwd is `#4EA8DE`, the branch `#BCE0FD`, the readout `#A9D6E5`.
@@ -144,10 +140,8 @@ extensions/
   config.ts           config schema, defaults, validation, file IO
   configPanel.ts      /ds-config settings list (inline, replaces the editor)
   ui/
-    theme.ts          theme wrappers
-    text.ts           width-safe truncate/wrap/pad
-    cache.ts          width-keyed cache
-    component.ts      Component base class
+    theme.ts          theme colour helper
+    text.ts           width-safe truncate/pad
     icons.ts          shared glyphs
     footer.ts         footer snapshot + renderer + component
     header.ts         startup header + splash layout
@@ -174,7 +168,6 @@ scripts/
 tests/
   config.test.ts
   width.test.ts
-  component.test.ts
   theme.test.ts
   footer.test.ts
   header.test.ts
@@ -194,9 +187,8 @@ tests/
 Only UI that pi's public extension surface can replace is implemented:
 
 - header, footer, editor, working row
-- tool cards, custom messages/entries, markdown transformation
-- autocomplete, notifications
-- themes, terminal title, editor content
+- tool cards and Markdown transformation
+- bundled themes
 
 Permission prompts are **not** part of this package. Use a dedicated permission extension; pi-ds-tui does not intercept tool calls or render approval dialogs.
 

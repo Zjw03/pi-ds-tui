@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { applyPromptPrefix, installEditor, restoreEditor, type EditorUi } from '../extensions/ui/editor.ts'
+import { applyPromptPrefix, installEditor, type EditorUi } from '../extensions/ui/editor.ts'
 
 type Factory = NonNullable<Parameters<EditorUi['setEditorComponent']>[0]>
 
@@ -33,6 +33,20 @@ test('no prefix is added without leading padding', () => {
   assert.deepEqual(applyPromptPrefix(input, '\u276f', color), input)
 })
 
+test('the prompt respects the editor padding', () => {
+  const input = ['border', '   hello', 'border']
+  assert.deepEqual(applyPromptPrefix(input, '\u276f', color, 3), [
+    'border',
+    '\u276f  hello',
+    'border',
+  ])
+})
+
+test('layouts with less than two padding cells are left alone', () => {
+  const input = ['border', ' hello', 'border']
+  assert.deepEqual(applyPromptPrefix(input, '\u276f', color, 1), input)
+})
+
 test('short editor output is left alone', () => {
   assert.deepEqual(applyPromptPrefix(['border', '  hello'], '\u276f', color), ['border', '  hello'])
   assert.deepEqual(applyPromptPrefix([], '\u276f', color), [])
@@ -47,22 +61,7 @@ test('the prefix is colored through the callback', () => {
   assert.deepEqual(seen, ['\u276f'])
 })
 
-test('installEditor works when the slot starts empty', () => {
-  let current: Factory | undefined
-  const ui: EditorUi = {
-    getEditorComponent: () => current,
-    setEditorComponent: (factory) => {
-      current = factory
-    },
-  }
-
-  installEditor(ui, '\u276f')
-  assert.equal(typeof current, 'function')
-  restoreEditor(ui)
-  assert.equal(current, undefined)
-})
-
-test('installEditor remembers and restores the previous factory', () => {
+test('installEditor is idempotent for the same factory', () => {
   // SAFETY: the test only compares factory identity; it never invokes them.
   const before = (() => undefined) as unknown as Factory
   let current: Factory | undefined = before
@@ -80,7 +79,4 @@ test('installEditor remembers and restores the previous factory', () => {
 
   installEditor(ui, '\u276f')
   assert.equal(current, installed)
-
-  restoreEditor(ui)
-  assert.equal(current, before)
 })

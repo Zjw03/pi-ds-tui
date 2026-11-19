@@ -155,6 +155,11 @@ const STALE = [
   'overlays.enabled',
   'widgets.above',
   'grouping.ts',
+  'narrowWidth',
+  'autocomplete.enabled',
+  'messages.enabled',
+  'entries.enabled',
+  'mouse.enabled',
 ]
 for (const [label, body] of [
   ['README.md', readme],

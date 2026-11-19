@@ -2,12 +2,11 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { visibleWidth } from '@earendil-works/pi-tui'
 import {
-  clampLines,
   fitLine,
   padRight,
   sanitizeSingleLine,
   truncateMiddle,
-  wrapLines,
+  truncateTail,
 } from '../extensions/ui/text.ts'
 
 const ANSI = '\u001b[31mred\u001b[0m'
@@ -46,18 +45,15 @@ test('padRight returns exactly the requested width', () => {
   }
 })
 
-test('clampLines keeps the cap and replaces the last line with the hint', () => {
-  assert.deepEqual(clampLines(['a', 'b', 'c'], 5), ['a', 'b', 'c'])
-  assert.deepEqual(clampLines(['a', 'b', 'c'], 2), ['a', '\u2026'])
-  assert.deepEqual(clampLines(['a'], 0), [])
+test('truncateTail keeps the end and fits', () => {
+  const text = 'npm run verify -- --watch --reporter spec'
+  for (const width of [10, 20, 30]) {
+    const line = truncateTail(text, width)
+    assert.ok(visibleWidth(line) <= width)
+    assert.ok(line.endsWith('spec') || width < 8)
+  }
 })
 
 test('sanitizeSingleLine collapses newlines and tabs', () => {
   assert.equal(sanitizeSingleLine(' a\n\tb   c '), 'a b c')
-})
-
-test('wrapLines preserves ANSI and respects width', () => {
-  const lines = wrapLines(`one two three \u4e16\u754c ${ANSI} four five`, 8)
-  assert.ok(lines.length > 1)
-  for (const line of lines) assert.ok(visibleWidth(line) <= 8)
 })

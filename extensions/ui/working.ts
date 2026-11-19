@@ -48,12 +48,6 @@ export function applyWorking(ui: WorkingUi, config: WorkingConfig): void {
   ui.setWorkingVisible(true)
 }
 
-export function clearWorking(ui: WorkingUi): void {
-  ui.setWorkingMessage()
-  ui.setWorkingIndicator()
-  ui.setWorkingVisible(true)
-}
-
 /** Output tokens of one assistant message; 0 for anything else. */
 export function outputTokens(message: unknown): number {
   if (typeof message !== 'object' || message === null) return 0
@@ -141,6 +135,10 @@ export function installWorkingTracker(pi: ExtensionAPI, config: WorkingConfig): 
   }
 
   const reset = (nextUi: WorkingUi | undefined): void => {
+    if (nextUi === undefined) {
+      stopTimer()
+      return
+    }
     ui = nextUi
     startedAt = Date.now()
     settledTokens = 0
@@ -160,16 +158,19 @@ export function installWorkingTracker(pi: ExtensionAPI, config: WorkingConfig): 
     last = ''
     try {
       previous?.setWorkingMessage(config.message ?? undefined)
+      previous?.setWorkingIndicator()
     } catch {
       // Session already gone.
     }
   }
 
   pi.on('agent_start', (_event, ctx) => {
+    if (!ctx.hasUI) return
     reset(workingUi(ctx))
   })
 
   pi.on('turn_start', (_event, ctx) => {
+    if (!ctx.hasUI) return
     const next = workingUi(ctx)
     if (next !== undefined) ui = next
     if (startedAt === 0) startedAt = Date.now()
@@ -178,6 +179,7 @@ export function installWorkingTracker(pi: ExtensionAPI, config: WorkingConfig): 
   })
 
   pi.on('message_update', (event, ctx) => {
+    if (!ctx.hasUI) return
     const next = workingUi(ctx)
     if (next !== undefined) ui = next
     currentTokens = outputTokens(event.message)
@@ -187,6 +189,7 @@ export function installWorkingTracker(pi: ExtensionAPI, config: WorkingConfig): 
 
   pi.on('message_end', (event, ctx) => {
     if (event.message.role !== 'assistant') return
+    if (!ctx.hasUI) return
     const next = workingUi(ctx)
     if (next !== undefined) ui = next
     settledTokens += outputTokens(event.message)

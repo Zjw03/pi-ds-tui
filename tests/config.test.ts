@@ -42,17 +42,33 @@ test('invalid values fall back field by field', () => {
     path: '/virtual/pi-ds-tui.json',
     readFile: () =>
       JSON.stringify({
-        footer: { enabled: 'yes', narrowWidth: -1 },
+        footer: { enabled: 'yes' },
         toolCards: { diffMode: 'sideways', collapsedLines: 0 },
-        mouse: { enabled: true },
       }),
   })
   assert.equal(result.config.footer.enabled, DEFAULT_CONFIG.footer.enabled)
-  assert.equal(result.config.footer.narrowWidth, DEFAULT_CONFIG.footer.narrowWidth)
   assert.equal(result.config.toolCards.diffMode, DEFAULT_CONFIG.toolCards.diffMode)
   assert.equal(result.config.toolCards.collapsedLines, DEFAULT_CONFIG.toolCards.collapsedLines)
-  assert.equal(result.config.mouse.enabled, true)
-  assert.ok(result.warnings.length >= 4)
+  assert.ok(result.warnings.length >= 3)
+})
+
+test('removed switches are reported as unknown keys', () => {
+  const result = loadConfig({
+    path: '/virtual/pi-ds-tui.json',
+    readFile: () => JSON.stringify({ mouse: { enabled: true }, autocomplete: { enabled: false } }),
+  })
+  assert.ok(result.warnings.some((warning) => warning.includes('unknown key "mouse"')))
+  assert.ok(result.warnings.some((warning) => warning.includes('unknown key "autocomplete"')))
+  assert.equal('mouse' in result.config, false)
+})
+
+test('footer chips keep known names and warn about unknown ones', () => {
+  const result = loadConfig({
+    path: '/virtual/pi-ds-tui.json',
+    readFile: () => JSON.stringify({ footer: { chips: ['model', 'nope', 'cwd'] } }),
+  })
+  assert.deepEqual(result.config.footer.chips, ['model', 'cwd'])
+  assert.ok(result.warnings.some((warning) => warning.includes('unknown chip "nope"')))
 })
 
 test('read errors other than ENOENT are reported', () => {

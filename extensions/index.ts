@@ -100,6 +100,7 @@ export default function piDsTui(pi: ExtensionAPI): void {
 
   if (config.footer.enabled) {
     pi.on('session_start', (_event, ctx) => {
+      if (!ctx.hasUI) return
       ctx.ui.setFooter((_tui, theme, footerData) =>
         createFooterFactory(ctx, footerData, config.footer, () => ctx.ui.theme ?? theme),
       )
@@ -122,12 +123,16 @@ export default function piDsTui(pi: ExtensionAPI): void {
 
   if (config.editor.enabled) {
     pi.on('session_start', (_event, ctx) => {
+      if (!ctx.hasUI) return
       installEditor(ctx.ui, config.editor.prefix, config.working.enabled)
     })
   }
 
   if (config.working.enabled) {
-    pi.on('session_start', (_event, ctx) => applyWorking(ctx.ui, config.working))
+    pi.on('session_start', (_event, ctx) => {
+      if (!ctx.hasUI) return
+      applyWorking(ctx.ui, config.working)
+    })
     installWorkingTracker(pi, config.working)
   }
 

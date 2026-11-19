@@ -5,7 +5,6 @@ import {
   DEFAULT_WORKING_LABEL,
   WORKING_FRAMES,
   applyWorking,
-  clearWorking,
   formatElapsed,
   formatTokenCount,
   formatWorkingMessage,
@@ -41,7 +40,7 @@ interface TrackerHarness {
   lastMessage(): string | undefined
 }
 
-function track(message: string | null = null): TrackerHarness {
+function track(message: string | null = null, hasUI = true): TrackerHarness {
   const ui = fakeUi()
   const listeners = new Map<string, (event: unknown, ctx: unknown) => unknown>()
   const api = {
@@ -51,7 +50,7 @@ function track(message: string | null = null): TrackerHarness {
   } as unknown as ExtensionAPI
   installWorkingTracker(api, { enabled: true, message })
 
-  const ctx = { ui }
+  const ctx = { ui, hasUI }
   const lastMessage = (): string | undefined => {
     for (let index = ui.calls.length - 1; index >= 0; index--) {
       const call = ui.calls[index]
@@ -89,16 +88,6 @@ test('a disabled working row makes no calls', () => {
   const ui = fakeUi()
   applyWorking(ui, { enabled: false, message: 'Thinking' })
   assert.deepEqual(ui.calls, [])
-})
-
-test('clearWorking restores pi defaults', () => {
-  const ui = fakeUi()
-  clearWorking(ui)
-  assert.deepEqual(ui.calls, [
-    ['message', undefined],
-    ['indicator', undefined],
-    ['visible', true],
-  ])
 })
 
 test('token counts use thousands separators', () => {
@@ -175,6 +164,14 @@ test('a second assistant message adds to the same run', () => {
   harness.emit('message_update', { message: { role: 'assistant', usage: { output: 50 } } })
   assert.match(harness.lastMessage() ?? '', /Thinking \(\u2193 150 tokens/)
   harness.emit('agent_end', {})
+})
+
+test('the tracker is silent when the host has no UI', () => {
+  const harness = track(null, false)
+  harness.emit('agent_start')
+  harness.emit('message_update', { message: { role: 'assistant', usage: { output: 742 } } })
+  harness.emit('agent_end', {})
+  assert.deepEqual(harness.ui.calls, [])
 })
 
 test('tool results do not add tokens', () => {

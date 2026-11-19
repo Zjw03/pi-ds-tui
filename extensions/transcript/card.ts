@@ -8,11 +8,10 @@
  */
 import { homedir } from 'node:os'
 import { isAbsolute, relative, sep } from 'node:path'
-import { sliceByColumn } from '@earendil-works/pi-tui'
 import type { ThemeColor } from '@earendil-works/pi-coding-agent'
 import type { CardTheme, ToolRenderContext } from './types.ts'
 import { BLACK_CIRCLE, BULLET, MULTIPLICATION_X, TICK } from '../ui/icons.ts'
-import { fitLine, sanitizeSingleLine, truncateMiddle, visibleWidth } from '../ui/text.ts'
+import { fitLine, truncateMiddle, truncateTail, visibleWidth } from '../ui/text.ts'
 
 export function str(value: unknown): string | null {
   return typeof value === 'string' ? value : null
@@ -54,15 +53,6 @@ function toSlash(path: string): string {
   return sep === '/' ? path : path.split(sep).join('/')
 }
 
-/** Truncate from the left, keeping the tail (shell commands, trailing paths). */
-export function truncateTail(text: string, width: number, ellipsis = '\u2026'): string {
-  const plain = sanitizeSingleLine(text)
-  const total = visibleWidth(plain)
-  if (total <= width) return plain
-  const mark = visibleWidth(ellipsis)
-  if (width <= mark) return fitLine(plain, width, '')
-  return `${ellipsis}${sliceByColumn(plain, total - (width - mark), width - mark)}`
-}
 
 export interface CallHeaderOptions {
   readonly glyph: string

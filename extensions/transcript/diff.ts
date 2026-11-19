@@ -6,7 +6,7 @@
  * terminals get two columns (removed | added); narrow ones stay single-column.
  */
 import type { CardTheme } from './types.ts'
-import { fitLine, padRight, visibleWidth } from '../ui/text.ts'
+import { fitLine, padRight } from '../ui/text.ts'
 
 export type DiffRowKind = 'add' | 'remove' | 'context' | 'omit'
 
@@ -174,8 +174,5 @@ function renderSplit(rows: readonly DiffRow[], options: DiffRenderOptions): stri
 
 function cell(row: DiffRow | undefined, gutter: number, column: number, theme: CardTheme): string {
   if (row === undefined) return ' '.repeat(column)
-  const text = rowText(row, gutter)
-  const padded = padRight(text, column)
-  if (visibleWidth(padded) < column) return padded
-  return theme.fg(tokenFor(row.kind), padded)
+  return theme.fg(tokenFor(row.kind), padRight(rowText(row, gutter), column))
 }

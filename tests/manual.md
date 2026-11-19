@@ -77,7 +77,7 @@
 
 - [ ] `/ds-config` 在 editor 区域直接展开（与 `/settings`、`/model` 一致），不是浮层。
 - [ ] 上下各有一条全宽 `─` 分隔线，宽度随终端变化。
-- [ ] 列表显示 16 项，当前值与文件一致；文件不存在时显示默认值。
+- [ ] 列表显示 11 项，当前值与文件一致；文件不存在时显示默认值。
 - [ ] 输入字母可过滤；过滤后 Esc 仍能关闭面板。
 - [ ] Enter/Space 循环切换当前项，例如 `on` ↔ `off`。
 - [ ] 切换后立即写入 `~/.pi/agent/pi-ds-tui.json`，无需额外确认。
@@ -97,7 +97,6 @@
 - [ ] 只关 header：其余 chrome 正常。
 - [ ] 只关 editor：恢复 pi 默认编辑器。
 - [ ] 只关 working：恢复 pi 默认 working 行。
-- [ ] 只关 status：footer 不再出现 `working` 状态。
 - [ ] 只关 markdown：方言 mermaid 停止渲染，正文恢复原文。
 - [ ] `enabled: false`：完全恢复 pi 默认外观与命令集（除 `/ds-ui`）。
 

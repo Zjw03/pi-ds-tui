@@ -14,10 +14,14 @@ export const CONFIG_FILE = 'pi-ds-tui.json'
 
 export type DiffMode = 'auto' | 'split' | 'unified'
 
+/** Footer sections in the order they can appear; unknown names are rejected. */
+export const FOOTER_CHIPS = ['model', 'context', 'git', 'effort', 'cwd'] as const
+
+export type FooterChip = (typeof FOOTER_CHIPS)[number]
+
 export interface FooterConfig {
   readonly enabled: boolean
-  readonly chips: readonly string[]
-  readonly narrowWidth: number
+  readonly chips: readonly FooterChip[]
 }
 
 export interface HeaderConfig {
@@ -54,10 +58,6 @@ export interface DsUiConfig {
   readonly working: WorkingConfig
   readonly markdown: MarkdownConfig
   readonly toolCards: ToolCardsConfig
-  readonly autocomplete: { readonly enabled: boolean }
-  readonly messages: { readonly enabled: boolean }
-  readonly entries: { readonly enabled: boolean }
-  readonly mouse: { readonly enabled: boolean }
 }
 
 export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
@@ -65,17 +65,12 @@ export const DEFAULT_CONFIG: DsUiConfig = deepFreeze({
   footer: {
     enabled: true,
     chips: ['model', 'context', 'git', 'effort', 'cwd'],
-    narrowWidth: 60,
   },
   header: { enabled: true, logo: true },
   editor: { enabled: true, prefix: '\u276f' },
   working: { enabled: true, message: null },
   markdown: { enabled: true, mermaid: true },
   toolCards: { enabled: true, diffMode: 'auto', collapsedLines: 8 },
-  autocomplete: { enabled: true },
-  messages: { enabled: true },
-  entries: { enabled: true },
-  mouse: { enabled: false },
 })
 
 export interface ConfigLoadResult {
@@ -166,10 +161,6 @@ export function loadConfig(options: LoadConfigOptions = {}): ConfigLoadResult {
     working: readWorking(raw, warnings),
     markdown: readMarkdown(raw, warnings),
     toolCards: readToolCards(raw, warnings),
-    autocomplete: { enabled: readSectionBoolean(raw, 'autocomplete', 'enabled', true, warnings) },
-    messages: { enabled: readSectionBoolean(raw, 'messages', 'enabled', true, warnings) },
-    entries: { enabled: readSectionBoolean(raw, 'entries', 'enabled', true, warnings) },
-    mouse: { enabled: readSectionBoolean(raw, 'mouse', 'enabled', false, warnings) },
   })
 
   return { config, warnings, path, found: true }
@@ -183,27 +174,21 @@ const TOP_LEVEL_KEYS = new Set([
   'working',
   'markdown',
   'toolCards',
-  'autocomplete',
-  'messages',
-  'entries',
-  'mouse',
 ])
 
-const FOOTER_KEYS = new Set(['enabled', 'chips', 'narrowWidth'])
+const FOOTER_KEYS = new Set(['enabled', 'chips'])
 const HEADER_KEYS = new Set(['enabled', 'logo'])
 const EDITOR_KEYS = new Set(['enabled', 'prefix'])
 const WORKING_KEYS = new Set(['enabled', 'message'])
 const MARKDOWN_KEYS = new Set(['enabled', 'mermaid'])
 const TOOL_CARDS_KEYS = new Set(['enabled', 'diffMode', 'collapsedLines'])
-const SIMPLE_SECTION_KEYS = new Set(['enabled'])
 
 function readFooter(root: Record<string, unknown>, warnings: string[]): FooterConfig {
   const section = readObject(root, 'footer', warnings)
   checkUnknown(section, FOOTER_KEYS, 'footer', warnings)
   return {
     enabled: readBoolean(section, 'enabled', DEFAULT_CONFIG.footer.enabled, 'footer', warnings),
-    chips: readStringArray(section, 'chips', DEFAULT_CONFIG.footer.chips, 'footer', warnings),
-    narrowWidth: readNumber(section, 'narrowWidth', DEFAULT_CONFIG.footer.narrowWidth, 'footer', warnings, 20),
+    chips: readFooterChips(section, warnings),
   }
 }
 
@@ -267,17 +252,6 @@ function readToolCards(root: Record<string, unknown>, warnings: string[]): ToolC
   }
 }
 
-function readSectionBoolean(
-  root: Record<string, unknown>,
-  sectionKey: string,
-  key: string,
-  fallback: boolean,
-  warnings: string[],
-): boolean {
-  const section = readObject(root, sectionKey, warnings)
-  checkUnknown(section, SIMPLE_SECTION_KEYS, sectionKey, warnings)
-  return readBoolean(section, key, fallback, sectionKey, warnings)
-}
 
 function readObject(
   root: Record<string, unknown>,
@@ -359,20 +333,25 @@ function readNumber(
   return Math.floor(value)
 }
 
-function readStringArray(
-  record: Record<string, unknown>,
-  key: string,
-  fallback: readonly string[],
-  path: string,
+/** Known footer chips only; typo'd chips warn and are dropped. */
+function readFooterChips(
+  section: Record<string, unknown>,
   warnings: string[],
-): readonly string[] {
-  const value = record[key]
-  if (value === undefined) return fallback
+): readonly FooterChip[] {
+  const value = section.chips
+  if (value === undefined) return DEFAULT_CONFIG.footer.chips
   if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
-    warnings.push(`${path}.${key}: expected an array of strings`)
-    return fallback
+    warnings.push('footer.chips: expected an array of strings')
+    return DEFAULT_CONFIG.footer.chips
   }
-  return [...value] as string[]
+
+  const known = new Set<string>(FOOTER_CHIPS)
+  const chips: FooterChip[] = []
+  for (const chip of value) {
+    if (known.has(chip)) chips.push(chip as FooterChip)
+    else warnings.push(`footer.chips: unknown chip "${chip}"`)
+  }
+  return chips
 }
 
 function readEnum<T extends string>(

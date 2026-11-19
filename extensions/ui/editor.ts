@@ -17,22 +17,28 @@ export interface EditorUi {
 }
 
 let installed: EditorFactory | undefined
-let previous: EditorFactory | undefined
 let installedEmbed: boolean | undefined
 
 const PREFIX_COLS = 2
 
-/** Replace the first two padding cells of the first content line with `prefix `. */
+/**
+ * Replace the first `padding` cells of the first content line with `prefix `.
+ * At least two padding cells are required, so the glyph and its trailing space
+ * both fit; narrower layouts are left untouched instead of shifting text.
+ */
 export function applyPromptPrefix(
   lines: readonly string[],
   prefix: string,
   color: (text: string) => string,
+  padding = PREFIX_COLS,
 ): string[] {
   const copy = [...lines]
+  const cells = Math.max(0, Math.floor(padding))
   const firstContent = copy[1]
-  if (copy.length > 2 && firstContent !== undefined && firstContent.startsWith('  ')) {
-    copy[1] = `${color(prefix)} ${firstContent.slice(PREFIX_COLS)}`
-  }
+  if (cells < PREFIX_COLS || copy.length <= 2 || firstContent === undefined) return copy
+  const pad = ' '.repeat(cells)
+  if (!firstContent.startsWith(pad)) return copy
+  copy[1] = `${color(prefix)}${pad.slice(1)}${firstContent.slice(cells)}`
   return copy
 }
 
@@ -51,15 +57,27 @@ export class DshEditor extends CustomEditor {
   }
 
   override render(width: number): string[] {
-    // SAFETY: Editor keeps paddingX private; this subclass only reads and
-    // restores it around the super.render call, so it is always a number.
-    const self = this as unknown as { paddingX: number } // SAFETY: Editor's private paddingX is a number; we only read and restore it around super.render.
-    const saved = self.paddingX
-    self.paddingX = saved + PREFIX_COLS
+    // Editor.render() reads its private paddingX directly; calling the public
+    // setPaddingX() here would request a render on every frame. Keep one
+    // guarded private write (restored in finally) and read the base value via
+    // the public getter. If the field ever disappears, render without a prefix
+    // instead of throwing.
+    const saved = this.getPaddingX()
+    // SAFETY: pi-tui's Editor keeps paddingX private but Editor.render reads it
+    // directly; the field is a number on every supported version, and the write
+    // below is restored in finally. Verified by the typeof guard.
+    const internals = this as unknown as { paddingX?: number }
+    if (typeof internals.paddingX !== 'number') return super.render(width)
+    internals.paddingX = saved + PREFIX_COLS
     try {
-      return applyPromptPrefix(super.render(width), this.#prefix, (text) => this.borderColor(text))
+      return applyPromptPrefix(
+        super.render(width),
+        this.#prefix,
+        (text) => this.borderColor(text),
+        PREFIX_COLS,
+      )
     } finally {
-      self.paddingX = saved
+      internals.paddingX = saved
     }
   }
 }
@@ -71,7 +89,7 @@ export function createEditorFactory(prefix: string, embedWorkingStatus: boolean)
   return factory
 }
 
-/** Install the editor, remembering the factory that owned the slot before us. */
+/** Install the editor, replacing our own factory when it is already active. */
 export function installEditor(ui: EditorUi, prefix: string, embedWorkingStatus = true): void {
   const current = ui.getEditorComponent()
   if (
@@ -81,17 +99,7 @@ export function installEditor(ui: EditorUi, prefix: string, embedWorkingStatus =
   ) {
     return
   }
-  previous = current
   installed = createEditorFactory(prefix, embedWorkingStatus)
   installedEmbed = embedWorkingStatus
   ui.setEditorComponent(installed)
-}
-
-/** Put the previous editor factory back. */
-export function restoreEditor(ui: EditorUi): void {
-  if (installed === undefined) return
-  ui.setEditorComponent(previous)
-  installed = undefined
-  previous = undefined
-  installedEmbed = undefined
 }

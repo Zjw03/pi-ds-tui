@@ -11,7 +11,6 @@ import {
   stripTerminalSequences,
   truncateToWidth,
   visibleWidth,
-  wrapTextWithAnsi,
 } from '@earendil-works/pi-tui'
 
 export { visibleWidth }
@@ -49,19 +48,17 @@ export function padRight(text: string, width: number): string {
   return missing > 0 ? `${fitted}${' '.repeat(missing)}` : fitted
 }
 
-/** Wrap text while preserving ANSI styles across line breaks. */
-export function wrapLines(text: string, width: number): string[] {
-  return width <= 0 ? [] : wrapTextWithAnsi(text, width)
+/** Truncate from the left, keeping the tail (shell commands, trailing paths). */
+export function truncateTail(text: string, width: number, ellipsis = '\u2026'): string {
+  const plain = sanitizeSingleLine(text)
+  const total = visibleWidth(plain)
+  if (total <= width) return plain
+  const mark = visibleWidth(ellipsis)
+  if (width <= mark) return fitLine(plain, width, '')
+  return `${ellipsis}${sliceByColumn(plain, total - (width - mark), width - mark)}`
 }
 
 /** Collapse newlines/tabs into single spaces (footer and one-line labels). */
 export function sanitizeSingleLine(text: string): string {
   return text.replace(/[\r\n\t]+/g, ' ').replace(/ +/g, ' ').trim()
-}
-
-/** Keep at most `maxLines` lines; the last kept line is replaced by `hint`. */
-export function clampLines(lines: readonly string[], maxLines: number, hint = '\u2026'): string[] {
-  if (maxLines <= 0) return []
-  if (lines.length <= maxLines) return [...lines]
-  return [...lines.slice(0, Math.max(0, maxLines - 1)), hint]
 }

@@ -1,9 +1,4 @@
-import { visibleWidth, type Component } from '@earendil-works/pi-tui'
-
-/** Render a component at one width and return its lines. */
-export function renderAt(component: Component, width: number): string[] {
-  return component.render(width)
-}
+import { visibleWidth } from '@earendil-works/pi-tui'
 
 /** Throw when any rendered line exceeds the width the component was given. */
 export function assertWidth(lines: readonly string[], width: number, label = 'render'): void {
@@ -15,9 +10,4 @@ export function assertWidth(lines: readonly string[], width: number, label = 're
       )
     }
   }
-}
-
-/** Stable snapshot string for node:test comparisons. */
-export function snapshot(component: Component, width: number): string {
-  return renderAt(component, width).join('\n')
 }

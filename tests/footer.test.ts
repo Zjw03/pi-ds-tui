@@ -243,3 +243,69 @@ test('snapshotFooter reads context, model, git and the cache hit rate', () => {
   const cached = snapshotFooter(ctx, data, cache)
   assert.equal(cached.cacheHitPercent, 25)
 })
+
+test('the cache hit lookup does not copy entries on a cache hit', () => {
+  const cache = { entryCount: -1, cacheHitPercent: null }
+  let copies = 0
+  const ctx = {
+    cwd: '/work',
+    sessionManager: {
+      getEntryCount: () => 1,
+      getEntries: () => {
+        copies += 1
+        return [{ type: 'message', message: { role: 'assistant', usage: { input: 10, cacheRead: 30 } } }]
+      },
+    },
+  }
+  const data = { getGitBranch: () => null, getExtensionStatuses: () => new Map<string, string>() }
+
+  assert.equal(snapshotFooter(ctx, data, cache).cacheHitPercent, 75)
+  assert.equal(snapshotFooter(ctx, data, cache).cacheHitPercent, 75)
+  assert.equal(copies, 1)
+})
+
+test('the latest assistant message without usage clears the cache hit rate', () => {
+  const cache = { entryCount: -1, cacheHitPercent: null }
+  const ctx = {
+    cwd: '/work',
+    sessionManager: {
+      getEntryCount: () => 2,
+      getEntries: () => [
+        { type: 'message', message: { role: 'assistant', usage: { input: 10, cacheRead: 30 } } },
+        { type: 'message', message: { role: 'assistant' } },
+      ],
+    },
+  }
+  const data = { getGitBranch: () => null, getExtensionStatuses: () => new Map<string, string>() }
+
+  assert.equal(snapshotFooter(ctx, data, cache).cacheHitPercent, null)
+})
+
+test('extension statuses are ordered by their registration key', () => {
+  const ctx = {
+    cwd: '/work',
+    sessionManager: { getEntryCount: () => 0, getEntries: () => [] },
+  }
+  const data = {
+    getGitBranch: () => null,
+    getExtensionStatuses: () =>
+      new Map([
+        ['zeta', 'last'],
+        ['alpha', 'first'],
+      ]),
+  }
+
+  assert.deepEqual(snapshotFooter(ctx, data).statuses, ['first', 'last'])
+})
+
+test('the model chip hides the model name but keeps thinking', () => {
+  const lines = renderFooter(
+    snapshot,
+    120,
+    { ...DEFAULT_CONFIG.footer, chips: ['context', 'effort'] },
+    theme,
+  )
+  const header = plain(lines[0] ?? '')
+  assert.ok(!header.includes('model-x'))
+  assert.ok(header.includes('high'))
+})
